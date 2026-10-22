@@ -88,6 +88,114 @@ section {
     padding: 6rem 0;
 }
 
+/* ============================
+   Animaciones y microinteracciones
+   ============================ */
+
+/* Reveal on scroll */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Entrada escalonada del hero */
+.hero-anim {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: heroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-anim-1 {
+    animation-delay: 0.1s;
+}
+
+.hero-anim-2 {
+    animation-delay: 0.25s;
+}
+
+.hero-anim-3 {
+    animation-delay: 0.45s;
+}
+
+.hero-anim-4 {
+    animation-delay: 0.65s;
+}
+
+@keyframes heroIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Nav con subrayado animado */
+nav a {
+    position: relative;
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: 100%;
+    height: 1px;
+    background: var(--accent-soft);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+nav a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* Botón con shine */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+/* Accesibilidad: respetar prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .reveal,
+    .hero-anim {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+        transition: none !important;
+    }
+
+    nav a::after,
+    .btn::before {
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 0 1.5rem;

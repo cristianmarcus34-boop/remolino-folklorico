@@ -2,26 +2,27 @@
 // src/pages/index.astro
 import '../styles/global.css';
 import Layout from '../layouts/Layout.astro';
+import ScrollReveal from '../components/ScrollReveal.astro';
 ---
 
 <Layout title="Inicio | Remolino Folklórico">
   <!-- Hero -->
   <section class="hero">
     <div class="container">
-      <p class="hero-kicker">Danza folclórica</p>
-      <h1>Remolino<br />Folklórico</h1>
-      <p class="hero-text">
+      <p class="hero-kicker hero-anim hero-anim-1">Danza folclórica</p>
+      <h1 class="hero-anim hero-anim-2">Remolino<br />Folklórico</h1>
+      <p class="hero-text hero-anim hero-anim-3">
         Un grupo dedicado a mantener viva la tradición a través de la danza,
         el color y la música de nuestra tierra.
       </p>
-      <a href="/eventos" class="btn">Ver próximos eventos</a>
+      <a href="/eventos" class="btn hero-anim hero-anim-4">Ver próximos eventos</a>
     </div>
   </section>
 
   <!-- Presentación breve -->
   <section class="intro">
     <div class="container intro-grid">
-      <div>
+      <div class="reveal">
         <h2>Tradición en movimiento</h2>
         <p>
           Somos un grupo de bailarines que lleva el folclor a cada escenario.
@@ -30,7 +31,7 @@ import Layout from '../layouts/Layout.astro';
         </p>
         <a href="/nosotros" class="link-arrow">Conocé más sobre nosotros →</a>
       </div>
-      <div class="intro-image">
+      <div class="intro-image reveal">
         <div class="placeholder">Foto del grupo</div>
       </div>
     </div>
@@ -38,12 +39,14 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- CTA -->
   <section class="cta">
-    <div class="container">
+    <div class="container reveal">
       <h2>¿Querés que bailemos en tu evento?</h2>
       <p>Escribinos y coordinamos una presentación.</p>
       <a href="mailto:contacto@remolino.com" class="btn">Contactar</a>
     </div>
   </section>
+
+  <ScrollReveal />
 
   <style>
     .hero {
