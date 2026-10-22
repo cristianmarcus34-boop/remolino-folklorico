@@ -1,8 +1,110 @@
 ---
+// src/pages/nosotros.astro
+import '../styles/global.css';
 import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Nosotros | Remolino Folklórico">
-  <h1>Sobre nosotros</h1>
-  <p>Somos un grupo dedicado a la difusión del folclor...</p>
+  <section class="page-hero">
+    <div class="container">
+      <p class="kicker">Quiénes somos</p>
+      <h1>Nuestra historia</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container grid-two">
+      <div>
+        <h2>Un grupo, una pasión</h2>
+        <p>
+          Remolino Folklórico nació del encuentro de un grupo de bailarines
+          que querían mantener viva la tradición. Desde entonces, llevamos
+          nuestra danza a escenarios, peñas y festivales.
+        </p>
+        <p>
+          Cada presentación es una oportunidad de compartir nuestras raíces
+          con el público, con coreografías que combinan el respeto por la
+          tradición y la energía de quienes las bailan.
+        </p>
+      </div>
+      <div>
+        <div class="placeholder tall">Foto del grupo</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-soft">
+    <div class="container">
+      <h2>Lo que nos define</h2>
+      <div class="values">
+        <div class="value">
+          <h3>Tradición</h3>
+          <p>Respetamos las raíces de cada danza que interpretamos.</p>
+        </div>
+        <div class="value">
+          <h3>Pasión</h3>
+          <p>Bailamos con el corazón en cada escenario.</p>
+        </div>
+        <div class="value">
+          <h3>Comunidad</h3>
+          <p>Somos un grupo que crece junto, dentro y fuera del escenario.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .page-hero {
+      padding: 6rem 0 3rem;
+      background: radial-gradient(ellipse at top, rgba(199, 91, 57, 0.12), transparent 60%);
+    }
+    .kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-size: 0.8rem;
+      color: var(--accent-soft);
+      margin-bottom: 1rem;
+    }
+    .grid-two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .grid-two p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+    .placeholder {
+      aspect-ratio: 4 / 5;
+      background: var(--bg-soft);
+      border: 1px dashed rgba(212, 168, 83, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .placeholder.tall { aspect-ratio: 3 / 4; }
+    .bg-soft { background: var(--bg-soft); }
+    .values {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .value h3 {
+      color: var(--accent-soft);
+      margin-bottom: 0.5rem;
+    }
+    .value p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    @media (max-width: 768px) {
+      .grid-two { grid-template-columns: 1fr; gap: 2rem; }
+      .values { grid-template-columns: 1fr; }
+      .page-hero { padding: 4rem 0 2rem; }
+    }
+  </style>
 </Layout>

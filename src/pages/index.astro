@@ -1,9 +1,129 @@
 ---
 // src/pages/index.astro
+import '../styles/global.css';
 import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Inicio | Remolino Folklórico">
-  <h1>Bienvenidos a Remolino Folklórico</h1>
-  <p>Próximamente encontrarás aquí nuestra historia, galería y fechas de presentaciones.</p>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <p class="hero-kicker">Danza folclórica</p>
+      <h1>Remolino<br />Folklórico</h1>
+      <p class="hero-text">
+        Un grupo dedicado a mantener viva la tradición a través de la danza,
+        el color y la música de nuestra tierra.
+      </p>
+      <a href="/eventos" class="btn">Ver próximos eventos</a>
+    </div>
+  </section>
+
+  <!-- Presentación breve -->
+  <section class="intro">
+    <div class="container intro-grid">
+      <div>
+        <h2>Tradición en movimiento</h2>
+        <p>
+          Somos un grupo de bailarines que lleva el folclor a cada escenario.
+          Con años de experiencia y pasión por nuestras raíces, compartimos
+          la cultura a través de coreografías que emocionan.
+        </p>
+        <a href="/nosotros" class="link-arrow">Conocé más sobre nosotros →</a>
+      </div>
+      <div class="intro-image">
+        <div class="placeholder">Foto del grupo</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <h2>¿Querés que bailemos en tu evento?</h2>
+      <p>Escribinos y coordinamos una presentación.</p>
+      <a href="mailto:contacto@remolino.com" class="btn">Contactar</a>
+    </div>
+  </section>
+
+  <style>
+    .hero {
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      background: radial-gradient(ellipse at top left, rgba(199, 91, 57, 0.15), transparent 60%),
+                  radial-gradient(ellipse at bottom right, rgba(212, 168, 83, 0.1), transparent 60%);
+    }
+    .hero-kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-size: 0.8rem;
+      color: var(--accent-soft);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      margin-bottom: 1.5rem;
+    }
+    .hero-text {
+      max-width: 520px;
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      margin-bottom: 2.5rem;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: var(--text);
+      padding: 0.9rem 2rem;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #a84a2d;
+      color: var(--text);
+    }
+    .intro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .intro p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+    .link-arrow {
+      font-size: 0.95rem;
+      color: var(--accent-soft);
+    }
+    .placeholder {
+      aspect-ratio: 4 / 5;
+      background: var(--bg-soft);
+      border: 1px dashed rgba(212, 168, 83, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .cta {
+      background: var(--bg-soft);
+      text-align: center;
+    }
+    .cta p {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 768px) {
+      .intro-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .hero {
+        min-height: 70vh;
+      }
+    }
+  </style>
 </Layout>

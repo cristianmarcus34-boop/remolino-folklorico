@@ -9,23 +9,81 @@ const { title = "Remolino Folklórico" } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{title}</title>
+    <meta name="description" content="Remolino Folklórico - Grupo de danza folclórica" />
   </head>
   <body>
-    <header>
-      <nav>
-        <a href="/">Inicio</a> |
-        <a href="/nosotros">Nosotros</a> |
-        <a href="/galeria">Galería</a> |
-        <a href="/eventos">Eventos</a>
-      </nav>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" class="logo">Remolino Folklórico</a>
+        <nav>
+          <a href="/">Inicio</a>
+          <a href="/nosotros">Nosotros</a>
+          <a href="/galeria">Galería</a>
+          <a href="/eventos">Eventos</a>
+        </nav>
+      </div>
     </header>
 
     <main>
       <slot />
     </main>
 
-    <footer>
-      <p>&copy; 2026 Remolino Folklórico. Todos los derechos reservados.</p>
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; 2026 Remolino Folklórico. Todos los derechos reservados.</p>
+      </div>
     </footer>
+
+    <style>
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(26, 20, 16, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(212, 168, 83, 0.15);
+      }
+      .header-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+      .logo {
+        font-family: var(--font-serif);
+        font-size: 1.3rem;
+        color: var(--text);
+        letter-spacing: 0.02em;
+      }
+      nav {
+        display: flex;
+        gap: 1.5rem;
+      }
+      nav a {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        transition: color 0.2s;
+      }
+      nav a:hover {
+        color: var(--accent-soft);
+      }
+      .site-footer {
+        border-top: 1px solid rgba(212, 168, 83, 0.15);
+        padding: 2rem 0;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      @media (max-width: 640px) {
+        .header-inner {
+          flex-direction: column;
+          gap: 0.8rem;
+        }
+        nav {
+          gap: 1rem;
+        }
+      }
+    </style>
   </body>
 </html>

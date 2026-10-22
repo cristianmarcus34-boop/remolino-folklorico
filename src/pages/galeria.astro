@@ -1,8 +1,72 @@
 ---
+// src/pages/galeria.astro
+import '../styles/global.css';
 import Layout from '../layouts/Layout.astro';
+
+const fotos = [
+  { alt: 'Presentación en festival' },
+  { alt: 'Danza en peña' },
+  { alt: 'Ensayo del grupo' },
+  { alt: 'Traje tradicional' },
+  { alt: 'Show en teatro' },
+  { alt: 'Grupo completo' },
+];
 ---
 
 <Layout title="Galería | Remolino Folklórico">
-  <h1>Galería</h1>
-  <p>Próximamente fotos de nuestras presentaciones.</p>
+  <section class="page-hero">
+    <div class="container">
+      <p class="kicker">Nuestro trabajo</p>
+      <h1>Galería</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="gallery">
+        {fotos.map((foto) => (
+          <div class="gallery-item">
+            <div class="placeholder">{foto.alt}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .page-hero {
+      padding: 6rem 0 3rem;
+      background: radial-gradient(ellipse at top, rgba(199, 91, 57, 0.12), transparent 60%);
+    }
+    .kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-size: 0.8rem;
+      color: var(--accent-soft);
+      margin-bottom: 1rem;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+    .placeholder {
+      aspect-ratio: 1 / 1;
+      background: var(--bg-soft);
+      border: 1px dashed rgba(212, 168, 83, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.9rem;
+      height: 100%;
+    }
+    @media (max-width: 768px) {
+      .gallery { grid-template-columns: 1fr 1fr; }
+      .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 1; }
+      .page-hero { padding: 4rem 0 2rem; }
+    }
+  </style>
 </Layout>

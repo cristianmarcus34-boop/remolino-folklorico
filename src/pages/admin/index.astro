@@ -1,12 +1,14 @@
 ---
 // src/pages/admin/index.astro
+import '../../styles/global.css';
 import AdminApp from '../../components/AdminApp.jsx';
 ---
 
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Panel de Administración</title>
+    <meta name="viewport" content="width=device-width" />
+    <title>Panel de Administración | Remolino Folklórico</title>
   </head>
   <body>
     <AdminApp client:only="react" />
