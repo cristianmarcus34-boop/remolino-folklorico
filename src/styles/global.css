@@ -6,8 +6,8 @@
     --accent-soft: #d4a853;
     --text: #f5f0e8;
     --text-muted: #a89a8a;
-    --font-serif: 'Georgia', 'Times New Roman', serif;
-    --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-serif: 'Fraunces', 'Georgia', serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -25,6 +25,19 @@ body {
     color: var(--text);
     font-family: var(--font-sans);
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+}
+
+/* Grain overlay global */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 h1,
@@ -32,25 +45,28 @@ h2,
 h3 {
     font-family: var(--font-serif);
     font-weight: 400;
-    line-height: 1.2;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
 }
 
 h1 {
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-size: clamp(3rem, 7vw, 5.5rem);
 }
 
 h2 {
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    margin-bottom: 1rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 1.2rem;
 }
 
 h3 {
     font-size: 1.4rem;
+    letter-spacing: -0.01em;
 }
 
 a {
     color: var(--accent-soft);
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 a:hover {
@@ -65,9 +81,19 @@ img {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 2rem;
 }
 
 section {
-    padding: 5rem 0;
+    padding: 6rem 0;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1.5rem;
+    }
+
+    section {
+        padding: 4rem 0;
+    }
 }
