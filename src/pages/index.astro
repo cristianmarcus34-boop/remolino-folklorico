@@ -3,19 +3,25 @@
 import '../styles/global.css';
 import Layout from '../layouts/Layout.astro';
 import ScrollReveal from '../components/ScrollReveal.astro';
+import RemolinoCanvas from '../components/RemolinoCanvas.astro';
 ---
 
 <Layout title="Inicio | Remolino Folklórico">
   <!-- Hero -->
   <section class="hero">
-    <div class="container">
-      <p class="hero-kicker hero-anim hero-anim-1">Danza folclórica</p>
-      <h1 class="hero-anim hero-anim-2">Remolino<br />Folklórico</h1>
-      <p class="hero-text hero-anim hero-anim-3">
-        Un grupo dedicado a mantener viva la tradición a través de la danza,
-        el color y la música de nuestra tierra.
-      </p>
-      <a href="/eventos" class="btn hero-anim hero-anim-4">Ver próximos eventos</a>
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <p class="hero-kicker hero-anim hero-anim-1">Danza folclórica</p>
+        <h1 class="hero-anim hero-anim-2">Remolino<br />Folklórico</h1>
+        <p class="hero-text hero-anim hero-anim-3">
+          Un grupo dedicado a mantener viva la tradición a través de la danza,
+          el color y la música de nuestra tierra.
+        </p>
+        <a href="/eventos" class="btn hero-anim hero-anim-4">Ver próximos eventos</a>
+      </div>
+      <div class="hero-visual hero-anim hero-anim-3">
+        <RemolinoCanvas />
+      </div>
     </div>
   </section>
 
@@ -56,6 +62,23 @@ import ScrollReveal from '../components/ScrollReveal.astro';
       padding: 6rem 0;
       background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(199, 91, 57, 0.12), transparent 70%),
                   radial-gradient(ellipse 60% 50% at 80% 70%, rgba(212, 168, 83, 0.08), transparent 70%);
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+      width: 100%;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+    .hero-visual {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-height: 600px;
     }
     .hero-kicker {
       text-transform: uppercase;
@@ -131,13 +154,28 @@ import ScrollReveal from '../components/ScrollReveal.astro';
       margin-bottom: 2.5rem;
       font-weight: 300;
     }
+    @media (max-width: 900px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .hero-visual {
+        order: 2;
+        aspect-ratio: 1 / 1;
+        max-height: 420px;
+      }
+      .hero-content {
+        order: 1;
+      }
+    }
     @media (max-width: 768px) {
       .intro-grid {
         grid-template-columns: 1fr;
         gap: 2.5rem;
       }
       .hero {
-        min-height: 80vh;
+        min-height: auto;
+        padding: 4rem 0;
       }
     }
   </style>
