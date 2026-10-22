@@ -1,0 +1,14 @@
+---
+// src/pages/admin/index.astro
+import AdminApp from '../../components/AdminApp.jsx';
+---
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel de Administración</title>
+  </head>
+  <body>
+    <AdminApp client:only="react" />
+  </body>
+</html>

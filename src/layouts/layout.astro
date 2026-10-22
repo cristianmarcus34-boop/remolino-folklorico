@@ -1,0 +1,31 @@
+---
+// src/layouts/Layout.astro
+const { title = "Remolino Folklórico" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/">Inicio</a> |
+        <a href="/nosotros">Nosotros</a> |
+        <a href="/galeria">Galería</a> |
+        <a href="/eventos">Eventos</a>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer>
+      <p>&copy; 2026 Remolino Folklórico. Todos los derechos reservados.</p>
+    </footer>
+  </body>
+</html>
