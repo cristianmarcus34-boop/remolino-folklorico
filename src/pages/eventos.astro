@@ -1,7 +1,7 @@
 ---
 // src/pages/eventos.astro
 import '../styles/global.css';
-import Layout from '../layouts/Layout.astro';
+import layout from '../layouts/layout.astro';
 import ScrollReveal from '../components/ScrollReveal.astro';
 
 const eventos = [
@@ -33,7 +33,7 @@ const formatearFecha = (iso) =>
   });
 ---
 
-<Layout title="Eventos | Remolino Folklórico">
+<layout title="Eventos | Remolino Folklórico">
   <section class="page-hero">
     <div class="container">
       <p class="kicker">Agenda</p>
@@ -136,4 +136,4 @@ const formatearFecha = (iso) =>
       .page-hero { padding: 4rem 0 2rem; }
     }
   </style>
-</Layout>
+</layout>

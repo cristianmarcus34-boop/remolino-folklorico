@@ -1,7 +1,7 @@
 ---
 // src/pages/galeria.astro
 import '../styles/global.css';
-import Layout from '../layouts/Layout.astro';
+import layout from '../layouts/layout.astro';
 import ScrollReveal from '../components/ScrollReveal.astro';
 
 const fotos = [
@@ -14,7 +14,7 @@ const fotos = [
 ];
 ---
 
-<Layout title="Galería | Remolino Folklórico">
+<layout title="Galería | Remolino Folklórico">
   <section class="page-hero">
     <div class="container">
       <p class="kicker">Nuestro trabajo</p>
@@ -83,4 +83,4 @@ const fotos = [
       }
     }
   </style>
-</Layout>
+</layout>
