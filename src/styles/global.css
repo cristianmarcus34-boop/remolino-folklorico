@@ -176,6 +176,125 @@ nav a:hover::after {
     left: 100%;
 }
 
+/* ============================
+   Panel de administración
+   ============================ */
+
+.admin-input,
+.admin-select,
+.admin-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg);
+    border: 1px solid rgba(212, 168, 83, 0.2);
+    color: var(--text);
+    border-radius: 2px;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.admin-input:focus,
+.admin-select:focus,
+.admin-textarea:focus {
+    outline: none;
+    border-color: var(--accent-soft);
+    background: var(--bg-soft);
+}
+
+.admin-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.admin-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.admin-field {
+    margin-bottom: 1.2rem;
+}
+
+.admin-card {
+    background: var(--bg-soft);
+    border: 1px solid rgba(212, 168, 83, 0.12);
+    border-radius: 4px;
+    padding: 1.5rem;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-card:hover {
+    border-color: rgba(212, 168, 83, 0.3);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.admin-link-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.3rem 0.5rem;
+    border-radius: 2px;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.admin-link-btn:hover {
+    color: var(--accent-soft);
+    background: rgba(212, 168, 83, 0.08);
+}
+
+.admin-link-btn.danger {
+    color: #e74c3c;
+}
+
+.admin-link-btn.danger:hover {
+    color: #ff6b5b;
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.admin-msg {
+    padding: 0.8rem 1rem;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
+.admin-msg.error {
+    background: rgba(231, 76, 60, 0.12);
+    border-left: 3px solid #e74c3c;
+    color: #ff8a7a;
+}
+
+.admin-msg.success {
+    background: rgba(76, 175, 80, 0.12);
+    border-left: 3px solid #4caf50;
+    color: #81c784;
+}
+
+.admin-page-title {
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    margin-bottom: 0.5rem;
+}
+
+.admin-page-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    font-weight: 300;
+}
+
 /* Accesibilidad: respetar prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
 

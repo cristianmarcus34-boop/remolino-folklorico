@@ -1,16 +1,178 @@
 ---
-// src/pages/admin/index.astro
-import '../../styles/global.css';
-import AdminApp from '../../components/AdminApp.jsx';
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { db } from "../../db/index.js";
+import { eventos } from "../../db/schema.js";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+  return Astro.redirect("/login");
+}
+
+const listaEventos = await db.select().from(eventos);
 ---
 
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Panel de Administración | Remolino Folklórico</title>
-  </head>
-  <body>
-    <AdminApp client:only="react" />
-  </body>
-</html>
+<AdminLayout title="Eventos | Panel">
+  <section style="padding: 3rem 0;">
+    <div class="container">
+      <div class="admin-page-header">
+        <div>
+          <h1 class="admin-page-title">Eventos</h1>
+          <p class="admin-page-subtitle">
+            Gestioná las próximas presentaciones del grupo.
+          </p>
+        </div>
+        <a href="/admin/eventos/nuevo" class="btn">+ Nuevo evento</a>
+      </div>
+
+      {
+        listaEventos.length === 0 ? (
+          <div
+            class="admin-card"
+            style="text-align: center; padding: 3rem 1.5rem;"
+          >
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">
+              No hay eventos cargados todavía.
+            </p>
+            <a href="/admin/eventos/nuevo" class="btn">
+              Crear el primero
+            </a>
+          </div>
+        ) : (
+          <div class="eventos-grid">
+            {listaEventos.map((ev) => (
+              <div class="admin-card evento-card">
+                <div class="evento-card-fecha">
+                  <span class="evento-card-dia">
+                    {new Date(ev.fecha).getDate()}
+                  </span>
+                  <span class="evento-card-mes">
+                    {new Date(ev.fecha).toLocaleDateString("es-AR", {
+                      month: "short",
+                    })}
+                  </span>
+                </div>
+                <div class="evento-card-info">
+                  <h3>{ev.titulo}</h3>
+                  <p>
+                    {ev.lugar}
+                    {ev.hora ? ` · ${ev.hora}` : ""}
+                  </p>
+                  <p class="evento-card-fecha-completa">
+                    {new Date(ev.fecha).toLocaleDateString("es-AR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <div class="evento-card-actions">
+                  <a href={`/admin/eventos/${ev.id}`} class="admin-link-btn">
+                    Editar
+                  </a>
+                  <button
+                    type="button"
+                    class="admin-link-btn danger delete-btn"
+                    data-id={ev.id}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <script>
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar este evento?")) return;
+        const id = btn.getAttribute("data-id");
+        const res = await fetch(`/api/eventos/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          alert("Error al eliminar");
+        }
+      });
+    });
+  </script>
+
+  <style>
+    .admin-page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .eventos-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .evento-card {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1rem 1.5rem;
+    }
+    .evento-card-fecha {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 60px;
+    }
+    .evento-card-dia {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--accent-soft);
+    }
+    .evento-card-mes {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    .evento-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .evento-card-info h3 {
+      margin-bottom: 0.2rem;
+      font-size: 1.1rem;
+    }
+    .evento-card-info p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .evento-card-fecha-completa {
+      font-size: 0.8rem !important;
+      opacity: 0.7;
+    }
+    .evento-card-actions {
+      display: flex;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+    @media (max-width: 640px) {
+      .evento-card {
+        flex-wrap: wrap;
+      }
+      .evento-card-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</AdminLayout>

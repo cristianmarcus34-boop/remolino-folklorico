@@ -1,0 +1,221 @@
+---
+import "../styles/global.css";
+
+const { title = "Panel | Remolino Folklórico" } = Astro.props;
+const session = Astro.locals.session;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>{title}</title>
+    </head>
+    <body>
+        <header class="admin-header">
+            <div class="container admin-header-inner">
+                <a href="/admin" class="admin-logo">
+                    <span class="admin-logo-mark">R</span>
+                    <span
+                        >Remolino <span class="admin-logo-sub">Panel</span
+                        ></span
+                    >
+                </a>
+
+                <nav class="admin-nav">
+                    <a
+                        href="/admin"
+                        class:list={[{ active: currentPath === "/admin" }]}
+                        >Eventos</a
+                    >
+                    <a
+                        href="/admin/galeria"
+                        class:list={[
+                            {
+                                active: currentPath.startsWith(
+                                    "/admin/galeria",
+                                ),
+                            },
+                        ]}>Galería</a
+                    >
+                    <a
+                        href="/"
+                        target="_blank"
+                        rel="noopener"
+                        class="admin-nav-external"
+                    >
+                        Ver sitio
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M7 17L17 7M17 7H7M17 7V17"></path>
+                        </svg>
+                    </a>
+                </nav>
+
+                <div class="admin-user">
+                    <span class="admin-user-email">{session?.user?.email}</span>
+                    <button id="logout-btn" class="admin-logout-btn">
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
+                            ></path>
+                        </svg>
+                        Salir
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <slot />
+        </main>
+
+        <script>
+            const logoutBtn = document.getElementById("logout-btn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", async () => {
+                    await fetch("/api/auth/sign-out", {
+                        method: "POST",
+                        credentials: "include",
+                    });
+                    window.location.href = "/login";
+                });
+            }
+        </script>
+
+        <style>
+            .admin-header {
+                background: rgba(26, 20, 16, 0.95);
+                border-bottom: 1px solid rgba(212, 168, 83, 0.12);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                backdrop-filter: blur(12px);
+            }
+            .admin-header-inner {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 2rem;
+                padding-top: 0.9rem;
+                padding-bottom: 0.9rem;
+                flex-wrap: wrap;
+            }
+            .admin-logo {
+                display: flex;
+                align-items: center;
+                gap: 0.7rem;
+                font-family: var(--font-serif);
+                font-size: 1.1rem;
+                color: var(--text);
+                font-weight: 500;
+            }
+            .admin-logo-mark {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 30px;
+                height: 30px;
+                background: var(--accent);
+                color: var(--text);
+                border-radius: 50%;
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+            .admin-logo-sub {
+                color: var(--text-muted);
+                font-size: 0.85rem;
+                font-family: var(--font-sans);
+                font-weight: 400;
+            }
+            .admin-nav {
+                display: flex;
+                gap: 1.5rem;
+                align-items: center;
+            }
+            .admin-nav a {
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                padding: 0.4rem 0;
+                border-bottom: 1px solid transparent;
+                transition:
+                    color 0.2s,
+                    border-color 0.2s;
+            }
+            .admin-nav a:hover {
+                color: var(--accent-soft);
+            }
+            .admin-nav a.active {
+                color: var(--accent-soft);
+                border-bottom-color: var(--accent-soft);
+            }
+            .admin-nav-external {
+                font-size: 0.8rem;
+            }
+            .admin-user {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                font-size: 0.8rem;
+                color: var(--text-muted);
+            }
+            .admin-user-email {
+                max-width: 180px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .admin-logout-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                background: none;
+                border: 1px solid rgba(212, 168, 83, 0.25);
+                color: var(--text-muted);
+                padding: 0.45rem 0.9rem;
+                border-radius: 2px;
+                font-size: 0.75rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .admin-logout-btn:hover {
+                border-color: var(--accent);
+                color: var(--accent-soft);
+            }
+            @media (max-width: 768px) {
+                .admin-header-inner {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.7rem;
+                }
+                .admin-nav {
+                    gap: 1rem;
+                }
+                .admin-user {
+                    width: 100%;
+                    justify-content: space-between;
+                }
+            }
+        </style>
+    </body>
+</html>

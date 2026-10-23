@@ -1,0 +1,324 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { db } from "../../db/index.js";
+import { galeria } from "../../db/schema.js";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+    return Astro.redirect("/login");
+}
+
+const imagenes = await db.select().from(galeria);
+---
+
+<AdminLayout title="Galería | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container">
+            <h1 class="admin-page-title">Galería</h1>
+            <p class="admin-page-subtitle">
+                Subí y gestioná las fotos del grupo.
+            </p>
+
+            <div class="admin-card" style="margin-bottom: 2.5rem;">
+                <form id="upload-form">
+                    <div id="dropzone" class="dropzone">
+                        <input
+                            type="file"
+                            name="file"
+                            accept="image/*"
+                            required
+                            id="file-input"
+                            hidden
+                        />
+                        <div id="dropzone-content">
+                            <svg
+                                width="32"
+                                height="32"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                style="color: var(--accent-soft); margin-bottom: 0.8rem;"
+                            >
+                                <path
+                                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                                ></path>
+                            </svg>
+                            <p style="margin-bottom: 0.3rem;">
+                                Arrastrá una imagen o hacé clic para seleccionar
+                            </p>
+                            <p
+                                style="font-size: 0.8rem; color: var(--text-muted);"
+                            >
+                                JPG, PNG o WebP · máx 4.5 MB
+                            </p>
+                        </div>
+                        <img
+                            id="preview"
+                            style="display: none; max-width: 100%; max-height: 300px; border-radius: 2px;"
+                        />
+                    </div>
+
+                    <div class="admin-field" style="margin-top: 1.2rem;">
+                        <label class="admin-label" for="alt"
+                            >Descripción (alt) *</label
+                        >
+                        <input
+                            id="alt"
+                            type="text"
+                            name="alt"
+                            required
+                            class="admin-input"
+                            placeholder="Ej: Presentación en el Teatro Provincial"
+                        />
+                    </div>
+
+                    <div class="admin-actions">
+                        <button type="submit" class="btn" id="submit-btn"
+                            >Subir imagen</button
+                        >
+                        <span
+                            id="status-msg"
+                            style="font-size: 0.85rem; color: var(--text-muted);"
+                        ></span>
+                    </div>
+                    <p
+                        id="error-msg"
+                        class="admin-msg error"
+                        style="display: none;"
+                    >
+                    </p>
+                </form>
+            </div>
+
+            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">
+                Imágenes cargadas ({imagenes.length})
+            </h2>
+
+            {
+                imagenes.length === 0 ? (
+                    <p style="color: var(--text-muted);">
+                        No hay imágenes en la galería todavía.
+                    </p>
+                ) : (
+                    <div class="galeria-grid">
+                        {imagenes.map((img) => (
+                            <div class="galeria-item">
+                                <img
+                                    src={img.url}
+                                    alt={img.alt}
+                                    loading="lazy"
+                                />
+                                <div class="galeria-info">
+                                    <p title={img.alt}>{img.alt}</p>
+                                    <button
+                                        type="button"
+                                        class="admin-link-btn danger delete-img-btn"
+                                        data-id={img.id}
+                                    >
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )
+            }
+        </div>
+    </section>
+
+    <script>
+        const form = document.querySelector<HTMLFormElement>("#upload-form");
+        const fileInput = document.getElementById(
+            "file-input",
+        ) as HTMLInputElement;
+        const dropzone = document.getElementById("dropzone");
+        const dropzoneContent = document.getElementById("dropzone-content");
+        const preview = document.getElementById("preview") as HTMLImageElement;
+        const submitBtn = document.getElementById("submit-btn");
+        const statusMsg = document.getElementById("status-msg");
+        const errorMsg = document.getElementById("error-msg");
+
+        if (dropzone && fileInput) {
+            dropzone.addEventListener("click", () => fileInput.click());
+
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("dragover");
+            });
+
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("dragover");
+            });
+
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("dragover");
+                if (e.dataTransfer?.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    showPreview();
+                }
+            });
+
+            fileInput.addEventListener("change", showPreview);
+        }
+
+        function showPreview() {
+            const file = fileInput.files?.[0];
+            if (!file || !preview || !dropzoneContent) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = String(e.target?.result || "");
+                preview.style.display = "block";
+                dropzoneContent.style.display = "none";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        if (form && submitBtn && statusMsg && errorMsg && fileInput) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                statusMsg.textContent = "Subiendo...";
+                submitBtn.setAttribute("disabled", "true");
+
+                const file = fileInput.files?.[0];
+                const alt =
+                    (document.getElementById("alt") as HTMLInputElement)
+                        ?.value || "";
+
+                if (!file) {
+                    errorMsg.textContent = "Seleccioná una imagen";
+                    errorMsg.style.display = "block";
+                    submitBtn.removeAttribute("disabled");
+                    return;
+                }
+
+                try {
+                    const uploadData = new FormData();
+                    uploadData.append("file", file);
+
+                    const uploadRes = await fetch("/api/upload", {
+                        method: "POST",
+                        body: uploadData,
+                        credentials: "include",
+                    });
+
+                    if (!uploadRes.ok) {
+                        const data = await uploadRes.json();
+                        throw new Error(
+                            data.error || "Error al subir la imagen",
+                        );
+                    }
+
+                    const { url } = await uploadRes.json();
+
+                    const saveRes = await fetch("/api/galeria", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ alt, url }),
+                    });
+
+                    if (!saveRes.ok) {
+                        const data = await saveRes.json();
+                        throw new Error(
+                            data.error || "Error al guardar en la base",
+                        );
+                    }
+
+                    window.location.reload();
+                } catch (err) {
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
+                    errorMsg.style.display = "block";
+                    statusMsg.textContent = "";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                }
+            });
+        }
+
+        document.querySelectorAll(".delete-img-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                if (!confirm("¿Eliminar esta imagen?")) return;
+                const id = btn.getAttribute("data-id");
+                const res = await fetch(`/api/galeria/${id}`, {
+                    method: "DELETE",
+                    credentials: "include",
+                });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error al eliminar");
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .dropzone {
+            border: 2px dashed rgba(212, 168, 83, 0.3);
+            border-radius: 4px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition:
+                border-color 0.2s,
+                background 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+        }
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: var(--accent-soft);
+            background: rgba(212, 168, 83, 0.05);
+        }
+        .galeria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .galeria-item {
+            background: var(--bg-soft);
+            border: 1px solid rgba(212, 168, 83, 0.12);
+            border-radius: 4px;
+            overflow: hidden;
+            transition:
+                border-color 0.2s,
+                transform 0.2s;
+        }
+        .galeria-item:hover {
+            border-color: rgba(212, 168, 83, 0.35);
+            transform: translateY(-2px);
+        }
+        .galeria-item img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            display: block;
+        }
+        .galeria-info {
+            padding: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .galeria-info p {
+            color: var(--text-muted);
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</AdminLayout>

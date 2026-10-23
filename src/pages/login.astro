@@ -1,0 +1,93 @@
+---
+import Layout from "../layouts/layout.astro";
+
+export const prerender = false;
+---
+
+<Layout title="Login | Remolino Folklórico">
+    <section
+        style="min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 4rem 0;"
+    >
+        <div
+            style="max-width: 400px; width: 100%; padding: 2rem; background: var(--bg-soft); border-radius: 4px;"
+        >
+            <h1
+                style="font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;"
+            >
+                Panel de Administración
+            </h1>
+            <form id="login-form">
+                <div style="margin-bottom: 1rem;">
+                    <label
+                        style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;"
+                        >Email</label
+                    >
+                    <input
+                        type="email"
+                        name="email"
+                        required
+                        style="width: 100%; padding: 0.7rem; background: var(--bg); border: 1px solid rgba(212,168,83,0.2); color: var(--text); border-radius: 2px;"
+                    />
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label
+                        style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;"
+                        >Contraseña</label
+                    >
+                    <input
+                        type="password"
+                        name="password"
+                        required
+                        style="width: 100%; padding: 0.7rem; background: var(--bg); border: 1px solid rgba(212,168,83,0.2); color: var(--text); border-radius: 2px;"
+                    />
+                </div>
+                <button type="submit" class="btn" style="width: 100%;"
+                    >Entrar</button
+                >
+                <p
+                    id="error-msg"
+                    style="color: #e74c3c; font-size: 0.85rem; margin-top: 1rem; display: none;"
+                >
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        const form = document.querySelector<HTMLFormElement>("#login-form");
+        const errorMsg = document.getElementById("error-msg");
+
+        if (form && errorMsg) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+
+                const formData = new FormData(form);
+
+                try {
+                    const res = await fetch("/api/auth/sign-in/email", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            email: String(formData.get("email") || ""),
+                            password: String(formData.get("password") || ""),
+                        }),
+                    });
+
+                    if (res.ok) {
+                        window.location.href = "/admin";
+                    } else {
+                        const data = await res.json();
+                        errorMsg.textContent =
+                            data.message || "Credenciales inválidas";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    errorMsg.textContent = "Error de conexión";
+                    errorMsg.style.display = "block";
+                }
+            });
+        }
+    </script>
+</Layout>

@@ -1,0 +1,123 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+    return Astro.redirect("/login");
+}
+---
+
+<AdminLayout title="Nuevo evento | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container" style="max-width: 600px;">
+            <a
+                href="/admin"
+                class="admin-link-btn"
+                style="margin-bottom: 1.5rem; display: inline-block;"
+                >← Volver al panel</a
+            >
+
+            <h1 class="admin-page-title">Nuevo evento</h1>
+            <p class="admin-page-subtitle">
+                Completá los datos de la próxima presentación.
+            </p>
+
+            <form id="evento-form" class="admin-card">
+                <div class="admin-field">
+                    <label class="admin-label" for="titulo">Título *</label>
+                    <input
+                        id="titulo"
+                        type="text"
+                        name="titulo"
+                        required
+                        class="admin-input"
+                        placeholder="Ej: Peña de fin de año"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="lugar">Lugar *</label>
+                    <input
+                        id="lugar"
+                        type="text"
+                        name="lugar"
+                        required
+                        class="admin-input"
+                        placeholder="Ej: Centro Cultural Municipal"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="fecha">Fecha *</label>
+                    <input
+                        id="fecha"
+                        type="date"
+                        name="fecha"
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="hora">Hora</label>
+                    <input
+                        id="hora"
+                        type="text"
+                        name="hora"
+                        class="admin-input"
+                        placeholder="Ej: 21:00 hs"
+                    />
+                </div>
+
+                <div class="admin-actions">
+                    <button type="submit" class="btn">Guardar evento</button>
+                    <a href="/admin" class="admin-link-btn">Cancelar</a>
+                </div>
+                <p
+                    id="error-msg"
+                    class="admin-msg error"
+                    style="display: none;"
+                >
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        const form = document.querySelector<HTMLFormElement>("#evento-form");
+        const errorMsg = document.getElementById("error-msg");
+
+        if (form && errorMsg) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+
+                const formData = new FormData(form);
+
+                try {
+                    const res = await fetch("/api/eventos", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            titulo: String(formData.get("titulo") || ""),
+                            lugar: String(formData.get("lugar") || ""),
+                            fecha: String(formData.get("fecha") || ""),
+                            hora: String(formData.get("hora") || ""),
+                        }),
+                    });
+
+                    if (res.ok) {
+                        window.location.href = "/admin";
+                    } else {
+                        const data = await res.json();
+                        errorMsg.textContent = data.error || "Error al guardar";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    errorMsg.textContent = "Error de conexión";
+                    errorMsg.style.display = "block";
+                }
+            });
+        }
+    </script>
+</AdminLayout>
