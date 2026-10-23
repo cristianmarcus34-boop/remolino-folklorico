@@ -1,20 +1,20 @@
 ---
 // src/pages/galeria.astro
-import '../styles/global.css';
-import Layout from '../layouts/layout.astro';
-import ScrollReveal from '../components/ScrollReveal.astro';
+import "../styles/global.css";
+import Layout from "../layouts/layout.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
 
 const fotos = [
-  { alt: 'Presentación en festival' },
-  { alt: 'Danza en peña' },
-  { alt: 'Ensayo del grupo' },
-  { alt: 'Traje tradicional' },
-  { alt: 'Show en teatro' },
-  { alt: 'Grupo completo' },
+  { alt: "Presentación en festival" },
+  { alt: "Danza en peña" },
+  { alt: "Ensayo del grupo" },
+  { alt: "Traje tradicional" },
+  { alt: "Show en teatro" },
+  { alt: "Grupo completo" },
 ];
 ---
 
-<layout title="Galería | Remolino Folklórico">
+<Layout title="Galería | Remolino Folklórico">
   <section class="page-hero">
     <div class="container">
       <p class="kicker">Nuestro trabajo</p>
@@ -25,11 +25,13 @@ const fotos = [
   <section>
     <div class="container reveal">
       <div class="gallery">
-        {fotos.map((foto) => (
-          <div class="gallery-item">
-            <div class="placeholder">{foto.alt}</div>
-          </div>
-        ))}
+        {
+          fotos.map((foto) => (
+            <div class="gallery-item">
+              <div class="placeholder">{foto.alt}</div>
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -39,7 +41,11 @@ const fotos = [
   <style>
     .page-hero {
       padding: 6rem 0 3rem;
-      background: radial-gradient(ellipse at top, rgba(199, 91, 57, 0.12), transparent 60%);
+      background: radial-gradient(
+        ellipse at top,
+        rgba(199, 91, 57, 0.12),
+        transparent 60%
+      );
     }
     .kicker {
       text-transform: uppercase;
@@ -70,9 +76,11 @@ const fotos = [
       font-weight: 300;
       height: 100%;
     }
+
     @media (max-width: 768px) {
       .gallery {
         grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
       }
       .gallery-item:nth-child(1) {
         grid-column: span 2;
@@ -82,5 +90,18 @@ const fotos = [
         padding: 4rem 0 2rem;
       }
     }
+
+    @media (max-width: 480px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+      .gallery-item:nth-child(1) {
+        grid-column: span 1;
+        grid-row: span 1;
+      }
+      .page-hero {
+        padding: 3rem 0 1.5rem;
+      }
+    }
   </style>
-</layout>
+</Layout>

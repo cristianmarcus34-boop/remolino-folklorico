@@ -1,11 +1,11 @@
 ---
 // src/pages/nosotros.astro
-import '../styles/global.css';
-import Layout from '../layouts/layout.astro';
-import ScrollReveal from '../components/ScrollReveal.astro';
+import "../styles/global.css";
+import Layout from "../layouts/layout.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
 ---
 
-<layout title="Nosotros | Remolino Folklórico">
+<Layout title="Nosotros | Remolino Folklórico">
   <section class="page-hero">
     <div class="container">
       <p class="kicker">Quiénes somos</p>
@@ -18,14 +18,14 @@ import ScrollReveal from '../components/ScrollReveal.astro';
       <div>
         <h2>Un grupo, una pasión</h2>
         <p>
-          Remolino Folklórico nació del encuentro de un grupo de bailarines
-          que querían mantener viva la tradición. Desde entonces, llevamos
-          nuestra danza a escenarios, peñas y festivales.
+          Remolino Folklórico nació del encuentro de un grupo de bailarines que
+          querían mantener viva la tradición. Desde entonces, llevamos nuestra
+          danza a escenarios, peñas y festivales.
         </p>
         <p>
-          Cada presentación es una oportunidad de compartir nuestras raíces
-          con el público, con coreografías que combinan el respeto por la
-          tradición y la energía de quienes las bailan.
+          Cada presentación es una oportunidad de compartir nuestras raíces con
+          el público, con coreografías que combinan el respeto por la tradición
+          y la energía de quienes las bailan.
         </p>
       </div>
       <div>
@@ -59,7 +59,11 @@ import ScrollReveal from '../components/ScrollReveal.astro';
   <style>
     .page-hero {
       padding: 6rem 0 3rem;
-      background: radial-gradient(ellipse at top, rgba(199, 91, 57, 0.12), transparent 60%);
+      background: radial-gradient(
+        ellipse at top,
+        rgba(199, 91, 57, 0.12),
+        transparent 60%
+      );
     }
     .kicker {
       text-transform: uppercase;
@@ -91,8 +95,12 @@ import ScrollReveal from '../components/ScrollReveal.astro';
       font-style: italic;
       font-weight: 300;
     }
-    .placeholder.tall { aspect-ratio: 3 / 4; }
-    .bg-soft { background: var(--bg-soft); }
+    .placeholder.tall {
+      aspect-ratio: 3 / 4;
+    }
+    .bg-soft {
+      background: var(--bg-soft);
+    }
     .values {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -109,9 +117,16 @@ import ScrollReveal from '../components/ScrollReveal.astro';
       font-weight: 300;
     }
     @media (max-width: 768px) {
-      .grid-two { grid-template-columns: 1fr; gap: 2rem; }
-      .values { grid-template-columns: 1fr; }
-      .page-hero { padding: 4rem 0 2rem; }
+      .grid-two {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .values {
+        grid-template-columns: 1fr;
+      }
+      .page-hero {
+        padding: 4rem 0 2rem;
+      }
     }
   </style>
-</layout>
+</Layout>

@@ -2,24 +2,27 @@
 // src/components/RemolinoCanvas.astro
 ---
 
-<div id="remolino-container" class="remolino-container" aria-hidden="true"></div>
+<div id="remolino-container" class="remolino-container" aria-hidden="true">
+</div>
 
 <script>
-  import * as THREE from 'three';
+  import * as THREE from "three";
 
-  const container = document.getElementById('remolino-container');
-  if (!container) throw new Error('remolino-container no encontrado');
+  const container = document.getElementById("remolino-container");
+  if (!container) throw new Error("remolino-container no encontrado");
 
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
     60,
     container.clientWidth / container.clientHeight,
     0.1,
-    100
+    100,
   );
-  camera.position.z = 7.8; // más lejos para que entre el remolino ancho y largo
+  camera.position.z = 7.8;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(container.clientWidth, container.clientHeight);
@@ -28,7 +31,6 @@
 
   const colors = [0xc75b39, 0xd4a853, 0xf5f0e8, 0xa84a2d];
 
-  // Remolino más ancho y más largo
   const particleCount = 1600;
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
@@ -36,9 +38,9 @@
 
   for (let i = 0; i < particleCount; i++) {
     const t = i / particleCount;
-    const angle = t * Math.PI * 18;   // más vueltas para que el ancho se vea denso
-    const radius = 0.25 + t * 2.2;    // antes 1.4: ~55% más ancho
-    const y = (t - 0.5) * 3.8;        // antes 3.6: un poco más largo
+    const angle = t * Math.PI * 18;
+    const radius = 0.25 + t * 2.2;
+    const y = (t - 0.5) * 3.8;
 
     positions[i * 3] = Math.cos(angle) * radius;
     positions[i * 3 + 1] = y;
@@ -50,8 +52,8 @@
     colorsArray[i * 3 + 2] = color.b;
   }
 
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colorsArray, 3));
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colorsArray, 3));
 
   const material = new THREE.PointsMaterial({
     size: 0.03,
@@ -67,7 +69,7 @@
   scene.add(particles);
 
   const mouse = { x: 0, y: 0 };
-  window.addEventListener('mousemove', (e) => {
+  window.addEventListener("mousemove", (e) => {
     const rect = container.getBoundingClientRect();
     mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -83,7 +85,7 @@
   });
   resizeObserver.observe(container);
 
-  const clock = new THREE.Clock();
+  const timer = new THREE.Timer();
   let animationId;
   let isVisible = true;
 
@@ -94,7 +96,8 @@
     animationId = requestAnimationFrame(animate);
     if (!isVisible) return;
 
-    const elapsed = clock.getElapsedTime();
+    timer.update();
+    const elapsed = timer.getElapsed();
 
     if (!reduceMotion) {
       particles.rotation.y = elapsed * 0.15;
@@ -118,7 +121,7 @@
         isVisible = entry.isIntersecting;
       });
     },
-    { threshold: 0.1 }
+    { threshold: 0.1 },
   );
   observer.observe(container);
 </script>
@@ -135,5 +138,17 @@
     display: block;
     width: 100% !important;
     height: 100% !important;
+  }
+
+  @media (max-width: 900px) {
+    .remolino-container {
+      min-height: 320px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .remolino-container {
+      min-height: 260px;
+    }
   }
 </style>

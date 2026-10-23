@@ -1,13 +1,12 @@
 ---
 // src/pages/index.astro
-import '../styles/global.css';
-import Layout from '../layouts/layout.astro';
-import ScrollReveal from '../components/ScrollReveal.astro';
-import RemolinoCanvas from '../components/RemolinoCanvas.astro';
+import "../styles/global.css";
+import Layout from "../layouts/layout.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+import RemolinoCanvas from "../components/RemolinoCanvas.astro";
 ---
 
-<layout title="Inicio | Remolino Folklórico">
-  <!-- Hero -->
+<Layout title="Inicio | Remolino Folklórico">
   <section class="hero">
     <div class="container hero-grid">
       <div class="hero-content">
@@ -17,7 +16,9 @@ import RemolinoCanvas from '../components/RemolinoCanvas.astro';
           Un grupo dedicado a mantener viva la tradición a través de la danza,
           el color y la música de nuestra tierra.
         </p>
-        <a href="/eventos" class="btn hero-anim hero-anim-4">Ver próximos eventos</a>
+        <a href="/eventos" class="btn hero-anim hero-anim-4"
+          >Ver próximos eventos</a
+        >
       </div>
       <div class="hero-visual hero-anim hero-anim-3">
         <RemolinoCanvas />
@@ -25,15 +26,14 @@ import RemolinoCanvas from '../components/RemolinoCanvas.astro';
     </div>
   </section>
 
-  <!-- Presentación breve -->
   <section class="intro">
     <div class="container intro-grid">
       <div class="reveal">
         <h2>Tradición en movimiento</h2>
         <p>
           Somos un grupo de bailarines que lleva el folclor a cada escenario.
-          Con años de experiencia y pasión por nuestras raíces, compartimos
-          la cultura a través de coreografías que emocionan.
+          Con años de experiencia y pasión por nuestras raíces, compartimos la
+          cultura a través de coreografías que emocionan.
         </p>
         <a href="/nosotros" class="link-arrow">Conocé más sobre nosotros →</a>
       </div>
@@ -43,7 +43,6 @@ import RemolinoCanvas from '../components/RemolinoCanvas.astro';
     </div>
   </section>
 
-  <!-- CTA -->
   <section class="cta">
     <div class="container reveal">
       <h2>¿Querés que bailemos en tu evento?</h2>
@@ -60,8 +59,17 @@ import RemolinoCanvas from '../components/RemolinoCanvas.astro';
       display: flex;
       align-items: center;
       padding: 6rem 0;
-      background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(199, 91, 57, 0.12), transparent 70%),
-                  radial-gradient(ellipse 60% 50% at 80% 70%, rgba(212, 168, 83, 0.08), transparent 70%);
+      background:
+        radial-gradient(
+          ellipse 80% 60% at 20% 30%,
+          rgba(199, 91, 57, 0.12),
+          transparent 70%
+        ),
+        radial-gradient(
+          ellipse 60% 50% at 80% 70%,
+          rgba(212, 168, 83, 0.08),
+          transparent 70%
+        );
     }
     .hero-grid {
       display: grid;
@@ -110,7 +118,9 @@ import RemolinoCanvas from '../components/RemolinoCanvas.astro';
       letter-spacing: 0.12em;
       text-transform: uppercase;
       font-weight: 500;
-      transition: background 0.3s ease, transform 0.2s ease;
+      transition:
+        background 0.3s ease,
+        transform 0.2s ease;
     }
     .btn:hover {
       background: #a84a2d;
@@ -154,6 +164,8 @@ import RemolinoCanvas from '../components/RemolinoCanvas.astro';
       margin-bottom: 2.5rem;
       font-weight: 300;
     }
+
+    /* ---------- Responsive ---------- */
     @media (max-width: 900px) {
       .hero-grid {
         grid-template-columns: 1fr;
@@ -161,22 +173,44 @@ import RemolinoCanvas from '../components/RemolinoCanvas.astro';
       }
       .hero-visual {
         order: 2;
-        aspect-ratio: 1 / 1;
-        max-height: 420px;
+        max-height: 380px;
       }
       .hero-content {
         order: 1;
       }
-    }
-    @media (max-width: 768px) {
       .intro-grid {
         grid-template-columns: 1fr;
         gap: 2.5rem;
       }
+    }
+
+    @media (max-width: 600px) {
       .hero {
         min-height: auto;
-        padding: 4rem 0;
+        padding: 3rem 0 4rem;
+      }
+      .hero-kicker {
+        font-size: 0.62rem;
+        letter-spacing: 0.25em;
+        margin-bottom: 1.2rem;
+      }
+      .hero h1 {
+        margin-bottom: 1.2rem;
+      }
+      .hero-text {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+      }
+      .hero-visual {
+        max-height: 300px;
+      }
+      .btn {
+        padding: 0.9rem 1.8rem;
+        font-size: 0.75rem;
+      }
+      .cta p {
+        margin-bottom: 1.8rem;
       }
     }
   </style>
-</layout>
+</Layout>

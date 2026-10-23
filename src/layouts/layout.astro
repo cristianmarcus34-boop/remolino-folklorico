@@ -9,7 +9,10 @@ const { title = "Remolino Folklórico" } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{title}</title>
-    <meta name="description" content="Remolino Folklórico - Grupo de danza folclórica" />
+    <meta
+      name="description"
+      content="Remolino Folklórico - Grupo de danza folclórica"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -87,10 +90,24 @@ const { title = "Remolino Folklórico" } = Astro.props;
       @media (max-width: 640px) {
         .header-inner {
           flex-direction: column;
-          gap: 0.8rem;
+          gap: 0.6rem;
+          padding-top: 0.9rem;
+          padding-bottom: 0.9rem;
+        }
+        .logo {
+          font-size: 1.15rem;
         }
         nav {
-          gap: 1.2rem;
+          gap: 0.9rem;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        nav a {
+          font-size: 0.8rem;
+        }
+        .site-footer {
+          padding: 2rem 0;
+          font-size: 0.75rem;
         }
       }
     </style>
