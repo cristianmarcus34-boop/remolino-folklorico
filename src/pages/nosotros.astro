@@ -12,27 +12,38 @@ const imagenes = await db.select().from(galeria);
 const fotoDestacada = imagenes.find((f) => f.seccion === "nosotros") || null;
 ---
 
-<Layout title="Nosotros | Remolino Folklórico">
+<Layout
+  title="Nosotros | Remolino Folklórico"
+  description="La historia de Remolino Folklórico: un ballet integrado por mujeres que nació en 2025 del encuentro entre amigas unidas por la pasión por nuestras danzas."
+>
   <section class="page-hero">
     <div class="container">
       <p class="kicker">Quiénes somos</p>
       <h1>Nuestra historia</h1>
+      <p class="hero-subtitle">
+        Mujeres unidas por la danza, la amistad y el amor por nuestras
+        tradiciones.
+      </p>
     </div>
   </section>
 
   <section>
     <div class="container grid-two reveal">
       <div>
-        <h2>Un grupo, una pasión</h2>
+        <p class="section-kicker">El origen</p>
+        <h2>Un encuentro entre amigas</h2>
         <p>
-          Remolino Folklórico nació del encuentro de un grupo de bailarines que
-          querían mantener viva la tradición. Desde entonces, llevamos nuestra
-          danza a escenarios, peñas y festivales.
+          Ballet Remolino Folclórico nació el 8 de noviembre de 2025, a partir
+          de un encuentro entre amigas unidas por una misma pasión: el amor por
+          nuestras danzas y tradiciones folclóricas.
         </p>
         <p>
-          Cada presentación es una oportunidad de compartir nuestras raíces con
-          el público, con coreografías que combinan el respeto por la tradición
-          y la energía de quienes las bailan.
+          Aquella tarde, que se extendió entre charlas, recuerdos, una rica
+          picada y momentos compartidos, significó mucho más que una simple
+          reunión. Después de un tiempo sin verse y de haber dejado atrás sus
+          experiencias en distintos ballets, surgió una idea que cambiaría el
+          rumbo de sus historias: ¿por qué no volver a bailar juntas y formar un
+          grupo integrado exclusivamente por mujeres?
         </p>
       </div>
       <div class="nosotros-foto">
@@ -53,19 +64,94 @@ const fotoDestacada = imagenes.find((f) => f.seccion === "nosotros") || null;
 
   <section class="bg-soft">
     <div class="container reveal">
+      <p class="section-kicker">La iniciativa</p>
+      <h2>Transformar una dificultad en oportunidad</h2>
+      <p class="prose">
+        La propuesta nació de una realidad que muchas de ellas habían
+        experimentado: en numerosos grupos folclóricos, la escasez de bailarines
+        varones dificultaba la participación de las mujeres y limitaba sus
+        oportunidades de formar parte de determinados conjuntos. Frente a esta
+        situación, decidieron transformar esa dificultad en una oportunidad,
+        creando un espacio propio donde pudieran expresarse a través de la
+        danza, compartir su pasión y mantener vivas nuestras raíces culturales.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container reveal">
+      <p class="section-kicker">Los primeros pasos</p>
+      <h2>Cinco integrantes, un sueño compartido</h2>
+      <p class="prose">
+        Así, con tan solo cinco integrantes, comenzó a dar sus primeros pasos
+        Ballet Remolino Folclórico, un proyecto que nació de la amistad, la
+        iniciativa y el deseo de seguir bailando, pero que pronto se convertiría
+        en mucho más que un grupo de danza.
+      </p>
+      <p class="prose">
+        Los primeros desafíos no tardaron en llegar. Comenzaron a surgir
+        invitaciones a eventos, peñas y distintas presentaciones, y con cada
+        experiencia el ballet fue creciendo, sumando aprendizajes, momentos
+        inolvidables y nuevas integrantes que se fueron incorporando a este
+        sueño compartido.
+      </p>
+    </div>
+  </section>
+
+  <section class="bg-soft">
+    <div class="container reveal">
+      <p class="section-kicker">El presente</p>
+      <h2>Una familia que crece al ritmo de nuestras raíces</h2>
+      <p class="prose">
+        Con el paso del tiempo, Remolino Folclórico continuó expandiéndose y
+        fortaleciendo sus lazos, hasta convertirse en un espacio de encuentro,
+        compañerismo y crecimiento colectivo. A su propuesta artística también
+        se sumó el dictado de talleres de danzas folclóricas destinados a
+        personas principiantes, con el objetivo de acercar nuestras danzas
+        tradicionales a la comunidad y brindar a más personas la oportunidad de
+        aprender, disfrutar y conectarse con nuestra cultura.
+      </p>
+      <p class="prose">
+        Hoy, Remolino Folclórico sigue creciendo con la misma pasión que lo vio
+        nacer, demostrando que cuando existe unión, compromiso y amor por lo que
+        se hace, los sueños pueden transformarse en grandes proyectos.
+      </p>
+      <p class="prose highlight">
+        Lo que comenzó con cinco mujeres, una amistad y las ganas de volver a
+        bailar, hoy es una familia que crece al ritmo de nuestras raíces.
+      </p>
+      <p class="prose highlight">
+        Porque Remolino Folclórico no es solamente un ballet: es un sueño
+        compartido, una historia de amistad, un espacio de pertenencia y una
+        familia que gira, crece y se fortalece sin dejar de bailar.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container reveal">
       <h2>Lo que nos define</h2>
       <div class="values">
         <div class="value">
-          <h3>Tradición</h3>
-          <p>Respetamos las raíces de cada danza que interpretamos.</p>
+          <h3>Amistad</h3>
+          <p>
+            Nacimos de un encuentro entre amigas y crecimos como una familia que
+            baila junta.
+          </p>
         </div>
         <div class="value">
-          <h3>Pasión</h3>
-          <p>Bailamos con el corazón en cada escenario.</p>
+          <h3>Iniciativa</h3>
+          <p>
+            Transformamos una dificultad en oportunidad: un ballet integrado
+            exclusivamente por mujeres.
+          </p>
         </div>
         <div class="value">
           <h3>Comunidad</h3>
-          <p>Somos un grupo que crece junto, dentro y fuera del escenario.</p>
+          <p>
+            Compartimos nuestras danzas con la comunidad a través de talleres
+            para principiantes.
+          </p>
         </div>
       </div>
     </div>
@@ -89,6 +175,23 @@ const fotoDestacada = imagenes.find((f) => f.seccion === "nosotros") || null;
       color: var(--accent-soft);
       margin-bottom: 1rem;
     }
+    .hero-subtitle {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+    .section-kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-size: 0.7rem;
+      color: var(--accent-soft);
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
     .grid-two {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -99,7 +202,23 @@ const fotoDestacada = imagenes.find((f) => f.seccion === "nosotros") || null;
       color: var(--text-muted);
       margin-bottom: 1rem;
       font-weight: 300;
-      line-height: 1.7;
+      line-height: 1.75;
+    }
+    .prose {
+      color: var(--text-muted);
+      font-weight: 300;
+      line-height: 1.8;
+      max-width: 720px;
+      margin-bottom: 1.2rem;
+    }
+    .prose.highlight {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--text);
+      border-left: 2px solid var(--accent-soft);
+      padding-left: 1.5rem;
+      margin: 1.5rem 0;
     }
     .nosotros-foto img {
       width: 100%;
@@ -147,6 +266,13 @@ const fotoDestacada = imagenes.find((f) => f.seccion === "nosotros") || null;
       }
       .page-hero {
         padding: 4rem 0 2rem;
+      }
+      .hero-subtitle {
+        font-size: 1rem;
+      }
+      .prose.highlight {
+        font-size: 1rem;
+        padding-left: 1rem;
       }
     }
   </style>

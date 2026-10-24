@@ -1,6 +1,11 @@
 ---
 // src/layouts/layout.astro
-const { title = "Remolino Folklórico" } = Astro.props;
+const {
+  title = "Remolino Folklórico",
+  description = "Ballet folclórico integrado por mujeres. Tradición, amistad y amor por nuestras danzas en cada escenario.",
+  image = "https://remolino-folklorico.vercel.app/og-default.jpeg",
+  url = Astro.url.href,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -9,10 +14,29 @@ const { title = "Remolino Folklórico" } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{title}</title>
-    <meta
-      name="description"
-      content="Remolino Folklórico - Grupo de danza folclórica"
-    />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={url} />
+
+    <!-- Open Graph (WhatsApp, Facebook, Instagram, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Remolino Folklórico" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content={url} />
+    <meta property="og:locale" content="es_AR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -57,6 +81,10 @@ const { title = "Remolino Folklórico" } = Astro.props;
 
     <footer class="site-footer">
       <div class="container">
+        <p class="footer-tagline">
+          Mujeres unidas por la danza, la amistad y el amor por nuestras
+          tradiciones.
+        </p>
         <p>&copy; 2026 Remolino Folklórico. Todos los derechos reservados.</p>
         <p class="footer-admin">
           <a href="/admin">Panel de administración</a>
@@ -121,6 +149,17 @@ const { title = "Remolino Folklórico" } = Astro.props;
         font-size: 0.85rem;
         letter-spacing: 0.02em;
       }
+      .footer-tagline {
+        font-family: var(--font-serif);
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--accent-soft);
+        margin-bottom: 1rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.5;
+      }
       .footer-admin {
         margin-top: 0.8rem;
         font-size: 0.7rem;
@@ -159,6 +198,9 @@ const { title = "Remolino Folklórico" } = Astro.props;
         .site-footer {
           padding: 2rem 0;
           font-size: 0.75rem;
+        }
+        .footer-tagline {
+          font-size: 0.9rem;
         }
       }
     </style>
