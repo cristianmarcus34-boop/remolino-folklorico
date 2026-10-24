@@ -27,6 +27,7 @@ export const POST = async ({ request }) => {
         .values({
             alt: body.alt,
             url: body.url,
+            seccion: body.seccion || null,
         })
         .returning();
 

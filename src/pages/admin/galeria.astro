@@ -2,6 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { db } from "../../db/index.js";
 import { galeria } from "../../db/schema.js";
+import { desc } from "drizzle-orm";
 
 export const prerender = false;
 
@@ -10,7 +11,7 @@ if (!session) {
     return Astro.redirect("/login");
 }
 
-const imagenes = await db.select().from(galeria);
+const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
 ---
 
 <AdminLayout title="Galería | Panel">
@@ -75,6 +76,25 @@ const imagenes = await db.select().from(galeria);
                         />
                     </div>
 
+                    <div class="admin-field">
+                        <label class="admin-label" for="seccion"
+                            >¿Dónde se muestra?</label
+                        >
+                        <select id="seccion" name="seccion" class="admin-input">
+                            <option value=""
+                                >Solo en la galería (sin destacar)</option
+                            >
+                            <option value="galeria_destacada"
+                                >Destacada en Galería (grande)</option
+                            >
+                            <option value="nosotros"
+                                >Foto principal en Nosotros</option
+                            >
+                            <option value="inicio">Imagen en el Inicio</option>
+                            <option value="eventos">Imagen en Eventos</option>
+                        </select>
+                    </div>
+
                     <div class="admin-actions">
                         <button type="submit" class="btn" id="submit-btn"
                             >Subir imagen</button
@@ -112,7 +132,59 @@ const imagenes = await db.select().from(galeria);
                                     loading="lazy"
                                 />
                                 <div class="galeria-info">
-                                    <p title={img.alt}>{img.alt}</p>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <p
+                                            title={img.alt}
+                                            style="margin: 0 0 0.4rem 0;"
+                                        >
+                                            {img.alt}
+                                        </p>
+                                        <select
+                                            class="seccion-select"
+                                            data-id={img.id}
+                                            style="width: 100%; padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid rgba(212,168,83,0.2); color: var(--text); border-radius: 2px; font-size: 0.75rem;"
+                                        >
+                                            <option
+                                                value=""
+                                                selected={!img.seccion}
+                                            >
+                                                Solo galería
+                                            </option>
+                                            <option
+                                                value="galeria_destacada"
+                                                selected={
+                                                    img.seccion ===
+                                                    "galeria_destacada"
+                                                }
+                                            >
+                                                Destacada en Galería
+                                            </option>
+                                            <option
+                                                value="nosotros"
+                                                selected={
+                                                    img.seccion === "nosotros"
+                                                }
+                                            >
+                                                Nosotros
+                                            </option>
+                                            <option
+                                                value="inicio"
+                                                selected={
+                                                    img.seccion === "inicio"
+                                                }
+                                            >
+                                                Inicio
+                                            </option>
+                                            <option
+                                                value="eventos"
+                                                selected={
+                                                    img.seccion === "eventos"
+                                                }
+                                            >
+                                                Eventos
+                                            </option>
+                                        </select>
+                                    </div>
                                     <button
                                         type="button"
                                         class="admin-link-btn danger delete-img-btn"
@@ -128,137 +200,6 @@ const imagenes = await db.select().from(galeria);
             }
         </div>
     </section>
-
-    <script>
-        const form = document.querySelector<HTMLFormElement>("#upload-form");
-        const fileInput = document.getElementById(
-            "file-input",
-        ) as HTMLInputElement;
-        const dropzone = document.getElementById("dropzone");
-        const dropzoneContent = document.getElementById("dropzone-content");
-        const preview = document.getElementById("preview") as HTMLImageElement;
-        const submitBtn = document.getElementById("submit-btn");
-        const statusMsg = document.getElementById("status-msg");
-        const errorMsg = document.getElementById("error-msg");
-
-        if (dropzone && fileInput) {
-            dropzone.addEventListener("click", () => fileInput.click());
-
-            dropzone.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                dropzone.classList.add("dragover");
-            });
-
-            dropzone.addEventListener("dragleave", () => {
-                dropzone.classList.remove("dragover");
-            });
-
-            dropzone.addEventListener("drop", (e) => {
-                e.preventDefault();
-                dropzone.classList.remove("dragover");
-                if (e.dataTransfer?.files.length) {
-                    fileInput.files = e.dataTransfer.files;
-                    showPreview();
-                }
-            });
-
-            fileInput.addEventListener("change", showPreview);
-        }
-
-        function showPreview() {
-            const file = fileInput.files?.[0];
-            if (!file || !preview || !dropzoneContent) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.src = String(e.target?.result || "");
-                preview.style.display = "block";
-                dropzoneContent.style.display = "none";
-            };
-            reader.readAsDataURL(file);
-        }
-
-        if (form && submitBtn && statusMsg && errorMsg && fileInput) {
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                errorMsg.style.display = "none";
-                statusMsg.textContent = "Subiendo...";
-                submitBtn.setAttribute("disabled", "true");
-
-                const file = fileInput.files?.[0];
-                const alt =
-                    (document.getElementById("alt") as HTMLInputElement)
-                        ?.value || "";
-
-                if (!file) {
-                    errorMsg.textContent = "Seleccioná una imagen";
-                    errorMsg.style.display = "block";
-                    submitBtn.removeAttribute("disabled");
-                    return;
-                }
-
-                try {
-                    const uploadData = new FormData();
-                    uploadData.append("file", file);
-
-                    const uploadRes = await fetch("/api/upload", {
-                        method: "POST",
-                        body: uploadData,
-                        credentials: "include",
-                    });
-
-                    if (!uploadRes.ok) {
-                        const data = await uploadRes.json();
-                        throw new Error(
-                            data.error || "Error al subir la imagen",
-                        );
-                    }
-
-                    const { url } = await uploadRes.json();
-
-                    const saveRes = await fetch("/api/galeria", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({ alt, url }),
-                    });
-
-                    if (!saveRes.ok) {
-                        const data = await saveRes.json();
-                        throw new Error(
-                            data.error || "Error al guardar en la base",
-                        );
-                    }
-
-                    window.location.reload();
-                } catch (err) {
-                    errorMsg.textContent =
-                        err instanceof Error
-                            ? err.message
-                            : "Error de conexión";
-                    errorMsg.style.display = "block";
-                    statusMsg.textContent = "";
-                } finally {
-                    submitBtn.removeAttribute("disabled");
-                }
-            });
-        }
-
-        document.querySelectorAll(".delete-img-btn").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-                if (!confirm("¿Eliminar esta imagen?")) return;
-                const id = btn.getAttribute("data-id");
-                const res = await fetch(`/api/galeria/${id}`, {
-                    method: "DELETE",
-                    credentials: "include",
-                });
-                if (res.ok) {
-                    window.location.reload();
-                } else {
-                    alert("Error al eliminar");
-                }
-            });
-        });
-    </script>
 
     <style>
         .dropzone {
@@ -315,10 +256,181 @@ const imagenes = await db.select().from(galeria);
         }
         .galeria-info p {
             color: var(--text-muted);
-            margin: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        .seccion-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 2px;
+            background: rgba(212, 168, 83, 0.15);
+            color: var(--accent-soft);
+        }
     </style>
+
+    <script>
+        const form = document.getElementById("upload-form");
+        const fileInput = document.getElementById(
+            "file-input",
+        ) as HTMLInputElement | null;
+        const dropzone = document.getElementById("dropzone");
+        const dropzoneContent = document.getElementById("dropzone-content");
+        const preview = document.getElementById(
+            "preview",
+        ) as HTMLImageElement | null;
+        const submitBtn = document.getElementById("submit-btn");
+        const statusMsg = document.getElementById("status-msg");
+        const errorMsg = document.getElementById("error-msg");
+
+        if (dropzone && fileInput) {
+            dropzone.addEventListener("click", () => fileInput.click());
+
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("dragover");
+            });
+
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("dragover");
+            });
+
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("dragover");
+                if (e.dataTransfer && e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    showPreview();
+                }
+            });
+
+            fileInput.addEventListener("change", showPreview);
+        }
+
+        function showPreview() {
+            if (!fileInput || !fileInput.files) return;
+            const file = fileInput.files[0];
+            if (!file || !preview || !dropzoneContent) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = String(e.target ? e.target.result : "");
+                preview.style.display = "block";
+                dropzoneContent.style.display = "none";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        if (form && submitBtn && statusMsg && errorMsg && fileInput) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                statusMsg.textContent = "Subiendo...";
+                submitBtn.setAttribute("disabled", "true");
+
+                const file = fileInput.files ? fileInput.files[0] : null;
+                const altInput = document.getElementById("alt");
+                const seccionSelect = document.getElementById("seccion");
+                const alt =
+                    altInput && "value" in altInput ? altInput.value : "";
+                const seccion =
+                    seccionSelect && "value" in seccionSelect
+                        ? seccionSelect.value
+                        : null;
+
+                if (!file) {
+                    errorMsg.textContent = "Seleccioná una imagen";
+                    errorMsg.style.display = "block";
+                    submitBtn.removeAttribute("disabled");
+                    return;
+                }
+
+                try {
+                    const uploadData = new FormData();
+                    uploadData.append("file", file);
+
+                    const uploadRes = await fetch("/api/upload", {
+                        method: "POST",
+                        body: uploadData,
+                        credentials: "include",
+                    });
+
+                    if (!uploadRes.ok) {
+                        const data = await uploadRes.json();
+                        throw new Error(
+                            data.error || "Error al subir la imagen",
+                        );
+                    }
+
+                    const { url } = await uploadRes.json();
+
+                    const saveRes = await fetch("/api/galeria", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ alt, url, seccion }),
+                    });
+
+                    if (!saveRes.ok) {
+                        const data = await saveRes.json();
+                        throw new Error(
+                            data.error || "Error al guardar en la base",
+                        );
+                    }
+
+                    window.location.reload();
+                } catch (err) {
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
+                    errorMsg.style.display = "block";
+                    statusMsg.textContent = "";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                }
+            });
+        }
+
+        document.querySelectorAll(".delete-img-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                if (!confirm("¿Eliminar esta imagen?")) return;
+                const id = btn.getAttribute("data-id");
+                const res = await fetch(`/api/galeria/${id}`, {
+                    method: "DELETE",
+                    credentials: "include",
+                });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error al eliminar");
+                }
+            });
+        });
+
+        document.querySelectorAll(".seccion-select").forEach((sel) => {
+            sel.addEventListener("change", async () => {
+                if (!("value" in sel)) return;
+                const id = sel.getAttribute("data-id");
+                const seccion = sel.value || null;
+                try {
+                    const res = await fetch(`/api/galeria/${id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ seccion }),
+                    });
+                    if (!res.ok) {
+                        alert("Error al actualizar la sección");
+                        window.location.reload();
+                    }
+                } catch (err) {
+                    alert("Error de conexión");
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
 </AdminLayout>

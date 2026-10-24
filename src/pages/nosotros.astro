@@ -3,6 +3,13 @@
 import "../styles/global.css";
 import Layout from "../layouts/layout.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
+import { db } from "../db/index.js";
+import { galeria } from "../db/schema.js";
+
+export const prerender = false;
+
+const imagenes = await db.select().from(galeria);
+const fotoDestacada = imagenes.find((f) => f.seccion === "nosotros") || null;
 ---
 
 <Layout title="Nosotros | Remolino Folklórico">
@@ -28,8 +35,18 @@ import ScrollReveal from "../components/ScrollReveal.astro";
           y la energía de quienes las bailan.
         </p>
       </div>
-      <div>
-        <div class="placeholder tall">Foto del grupo</div>
+      <div class="nosotros-foto">
+        {
+          fotoDestacada ? (
+            <img
+              src={fotoDestacada.url}
+              alt={fotoDestacada.alt}
+              loading="lazy"
+            />
+          ) : (
+            <div class="placeholder tall">Foto del grupo</div>
+          )
+        }
       </div>
     </div>
   </section>
@@ -84,8 +101,14 @@ import ScrollReveal from "../components/ScrollReveal.astro";
       font-weight: 300;
       line-height: 1.7;
     }
+    .nosotros-foto img {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+      border-radius: 2px;
+    }
     .placeholder {
-      aspect-ratio: 4 / 5;
+      aspect-ratio: 3 / 4;
       background: var(--bg-soft);
       border: 1px dashed rgba(212, 168, 83, 0.25);
       display: flex;
@@ -94,9 +117,6 @@ import ScrollReveal from "../components/ScrollReveal.astro";
       color: var(--text-muted);
       font-style: italic;
       font-weight: 300;
-    }
-    .placeholder.tall {
-      aspect-ratio: 3 / 4;
     }
     .bg-soft {
       background: var(--bg-soft);
@@ -123,6 +143,7 @@ import ScrollReveal from "../components/ScrollReveal.astro";
       }
       .values {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
       }
       .page-hero {
         padding: 4rem 0 2rem;

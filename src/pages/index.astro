@@ -4,6 +4,16 @@ import "../styles/global.css";
 import Layout from "../layouts/layout.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
 import RemolinoCanvas from "../components/RemolinoCanvas.astro";
+import { db } from "../db/index.js";
+import { galeria } from "../db/schema.js";
+
+export const prerender = false;
+
+const imagenes = await db.select().from(galeria);
+const fotoInicio =
+  imagenes
+    .filter((f) => f.seccion === "inicio")
+    .sort((a, b) => b.id - a.id)[0] || null;
 ---
 
 <Layout title="Inicio | Remolino Folklórico">
@@ -11,24 +21,32 @@ import RemolinoCanvas from "../components/RemolinoCanvas.astro";
     <div class="container hero-grid">
       <div class="hero-content">
         <p class="hero-kicker hero-anim hero-anim-1">Danza folclórica</p>
-        <h1 class="hero-anim hero-anim-2">Remolino<br />Folklórico</h1>
+        <h1 class="hero-anim hero-anim-2">
+          Remolino<br /><span class="hero-accent">Folklórico</span>
+        </h1>
         <p class="hero-text hero-anim hero-anim-3">
           Un grupo dedicado a mantener viva la tradición a través de la danza,
           el color y la música de nuestra tierra.
         </p>
-        <a href="/eventos" class="btn hero-anim hero-anim-4"
-          >Ver próximos eventos</a
-        >
+        <div class="hero-actions hero-anim hero-anim-4">
+          <a href="/eventos" class="btn">Ver próximos eventos</a>
+          <a href="/nosotros" class="link-ghost">Conocé el grupo →</a>
+        </div>
       </div>
       <div class="hero-visual hero-anim hero-anim-3">
         <RemolinoCanvas />
       </div>
+    </div>
+    <div class="hero-scroll">
+      <span>Deslizá</span>
+      <div class="hero-scroll-line"></div>
     </div>
   </section>
 
   <section class="intro">
     <div class="container intro-grid">
       <div class="reveal">
+        <p class="section-kicker">Nuestra esencia</p>
         <h2>Tradición en movimiento</h2>
         <p>
           Somos un grupo de bailarines que lleva el folclor a cada escenario.
@@ -38,13 +56,27 @@ import RemolinoCanvas from "../components/RemolinoCanvas.astro";
         <a href="/nosotros" class="link-arrow">Conocé más sobre nosotros →</a>
       </div>
       <div class="intro-image reveal">
-        <div class="placeholder">Foto del grupo</div>
+        {
+          fotoInicio ? (
+            <div class="intro-photo">
+              <img
+                src={fotoInicio.url}
+                alt={fotoInicio.alt}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          ) : (
+            <div class="placeholder">Foto del grupo</div>
+          )
+        }
       </div>
     </div>
   </section>
 
   <section class="cta">
     <div class="container reveal">
+      <p class="section-kicker">Contrataciones</p>
       <h2>¿Querés que bailemos en tu evento?</h2>
       <p>Escribinos y coordinamos una presentación.</p>
       <a href="mailto:contacto@remolino.com" class="btn">Contactar</a>
@@ -55,21 +87,35 @@ import RemolinoCanvas from "../components/RemolinoCanvas.astro";
 
   <style>
     .hero {
-      min-height: 90vh;
+      position: relative;
+      min-height: 92vh;
       display: flex;
       align-items: center;
-      padding: 6rem 0;
+      padding: 6rem 0 8rem;
+      overflow: hidden;
       background:
         radial-gradient(
-          ellipse 80% 60% at 20% 30%,
-          rgba(199, 91, 57, 0.12),
-          transparent 70%
+          ellipse 70% 60% at 15% 25%,
+          rgba(199, 91, 57, 0.18),
+          transparent 65%
         ),
         radial-gradient(
-          ellipse 60% 50% at 80% 70%,
-          rgba(212, 168, 83, 0.08),
-          transparent 70%
+          ellipse 60% 50% at 85% 75%,
+          rgba(212, 168, 83, 0.12),
+          transparent 65%
         );
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(212, 168, 83, 0.25),
+        transparent
+      );
     }
     .hero-grid {
       display: grid;
@@ -99,14 +145,25 @@ import RemolinoCanvas from "../components/RemolinoCanvas.astro";
     .hero h1 {
       margin-bottom: 2rem;
       max-width: 900px;
+      font-weight: 300;
+    }
+    .hero-accent {
+      font-style: italic;
+      color: var(--accent-soft);
     }
     .hero-text {
       max-width: 480px;
       color: var(--text-muted);
       font-size: 1.1rem;
-      line-height: 1.7;
-      margin-bottom: 3rem;
+      line-height: 1.75;
+      margin-bottom: 2.5rem;
       font-weight: 300;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
     }
     .btn {
       display: inline-block;
@@ -127,22 +184,95 @@ import RemolinoCanvas from "../components/RemolinoCanvas.astro";
       color: var(--text);
       transform: translateY(-2px);
     }
+    .link-ghost {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      transition: color 0.2s ease;
+    }
+    .link-ghost:hover {
+      color: var(--accent-soft);
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      opacity: 0.5;
+    }
+    .hero-scroll span {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .hero-scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--accent-soft), transparent);
+    }
+
+    .section-kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-size: 0.7rem;
+      color: var(--accent-soft);
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
     .intro-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 5rem;
       align-items: center;
     }
+    .intro h2 {
+      margin-bottom: 1.5rem;
+    }
     .intro p {
       color: var(--text-muted);
       margin-bottom: 1.8rem;
       font-weight: 300;
-      line-height: 1.7;
+      line-height: 1.75;
     }
     .link-arrow {
       font-size: 0.9rem;
       color: var(--accent-soft);
       letter-spacing: 0.02em;
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+    .link-arrow:hover {
+      transform: translateX(4px);
+    }
+    .intro-photo {
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+      aspect-ratio: 4 / 5;
+    }
+    .intro-photo::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(212, 168, 83, 0.25);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .intro-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .intro-photo:hover img {
+      transform: scale(1.04);
     }
     .placeholder {
       aspect-ratio: 4 / 5;
@@ -154,10 +284,32 @@ import RemolinoCanvas from "../components/RemolinoCanvas.astro";
       color: var(--text-muted);
       font-style: italic;
       font-weight: 300;
+      border-radius: 4px;
     }
+
     .cta {
       background: var(--bg-soft);
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse 50% 80% at 50% 0%,
+        rgba(199, 91, 57, 0.1),
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+    .cta .container {
+      position: relative;
+      z-index: 1;
+    }
+    .cta h2 {
+      margin-bottom: 1rem;
     }
     .cta p {
       color: var(--text-muted);
@@ -177,6 +329,9 @@ import RemolinoCanvas from "../components/RemolinoCanvas.astro";
       }
       .hero-content {
         order: 1;
+      }
+      .hero-scroll {
+        display: none;
       }
       .intro-grid {
         grid-template-columns: 1fr;
@@ -203,6 +358,11 @@ import RemolinoCanvas from "../components/RemolinoCanvas.astro";
       }
       .hero-visual {
         max-height: 300px;
+      }
+      .hero-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
       }
       .btn {
         padding: 0.9rem 1.8rem;

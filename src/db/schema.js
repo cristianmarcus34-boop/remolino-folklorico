@@ -11,7 +11,6 @@ import {
 
 // ============================
 // Tablas de Better Auth
-// (generadas por la CLI de Better Auth)
 // ============================
 
 export const user = pgTable('user', {
@@ -104,6 +103,7 @@ export const galeria = pgTable('galeria', {
     id: serial('id').primaryKey(),
     alt: varchar('alt', { length: 255 }).notNull(),
     url: text('url').notNull(),
+    seccion: varchar('seccion', { length: 50 }), // 'nosotros', 'galeria_destacada', 'eventos', null
     createdAt: timestamp('created_at').defaultNow(),
 });
 

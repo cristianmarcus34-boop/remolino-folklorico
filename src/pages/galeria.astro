@@ -3,15 +3,16 @@
 import "../styles/global.css";
 import Layout from "../layouts/layout.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
+import { db } from "../db/index.js";
+import { galeria } from "../db/schema.js";
+import { desc } from "drizzle-orm";
 
-const fotos = [
-  { alt: "Presentación en festival" },
-  { alt: "Danza en peña" },
-  { alt: "Ensayo del grupo" },
-  { alt: "Traje tradicional" },
-  { alt: "Show en teatro" },
-  { alt: "Grupo completo" },
-];
+export const prerender = false;
+
+const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
+const destacada =
+  imagenes.find((i) => i.seccion === "galeria_destacada") || null;
+const resto = imagenes.filter((i) => i.id !== destacada?.id);
 ---
 
 <Layout title="Galería | Remolino Folklórico">
@@ -24,15 +25,36 @@ const fotos = [
 
   <section>
     <div class="container reveal">
-      <div class="gallery">
-        {
-          fotos.map((foto) => (
-            <div class="gallery-item">
-              <div class="placeholder">{foto.alt}</div>
-            </div>
-          ))
-        }
-      </div>
+      {
+        imagenes.length === 0 ? (
+          <p style="color: var(--text-muted); font-style: italic;">
+            Próximamente fotos de nuestras presentaciones.
+          </p>
+        ) : (
+          <div class="gallery">
+            {destacada && (
+              <div class="gallery-item gallery-item-large">
+                <img
+                  src={destacada.url}
+                  alt={destacada.alt}
+                  loading="eager"
+                  decoding="async"
+                />
+              </div>
+            )}
+            {resto.map((img) => (
+              <div class="gallery-item">
+                <img
+                  src={img.url}
+                  alt={img.alt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            ))}
+          </div>
+        )
+      }
     </div>
   </section>
 
@@ -59,30 +81,36 @@ const fotos = [
       grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
     }
-    .gallery-item:nth-child(1) {
+    .gallery-item {
+      overflow: hidden;
+      border-radius: 2px;
+      background: var(--bg-soft);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .gallery-item:hover img {
+      transform: scale(1.05);
+    }
+    .gallery-item-large {
       grid-column: span 2;
       grid-row: span 2;
     }
-    .placeholder {
-      aspect-ratio: 1 / 1;
-      background: var(--bg-soft);
-      border: 1px dashed rgba(212, 168, 83, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      font-style: italic;
-      font-size: 0.9rem;
-      font-weight: 300;
+    .gallery-item-large img {
+      aspect-ratio: auto;
       height: 100%;
     }
-
     @media (max-width: 768px) {
       .gallery {
         grid-template-columns: 1fr 1fr;
-        gap: 0.8rem;
+        gap: 0.6rem;
       }
-      .gallery-item:nth-child(1) {
+      .gallery-item-large {
         grid-column: span 2;
         grid-row: span 1;
       }
@@ -90,14 +118,12 @@ const fotos = [
         padding: 4rem 0 2rem;
       }
     }
-
     @media (max-width: 480px) {
       .gallery {
         grid-template-columns: 1fr;
       }
-      .gallery-item:nth-child(1) {
+      .gallery-item-large {
         grid-column: span 1;
-        grid-row: span 1;
       }
       .page-hero {
         padding: 3rem 0 1.5rem;
