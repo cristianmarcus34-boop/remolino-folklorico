@@ -107,6 +107,18 @@ export const galeria = pgTable('galeria', {
     createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const mensajes = pgTable('mensajes', {
+    id: serial('id').primaryKey(),
+    nombre: varchar('nombre', { length: 255 }).notNull(),
+    email: varchar('email', { length: 255 }).notNull(),
+    telefono: varchar('telefono', { length: 50 }),
+    tipoEvento: varchar('tipo_evento', { length: 100 }),
+    fechaEvento: varchar('fecha_evento', { length: 50 }),
+    mensaje: text('mensaje').notNull(),
+    leido: boolean('leido').default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // ============================
 // Relaciones de Better Auth
 // ============================

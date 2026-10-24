@@ -1,9 +1,21 @@
 ---
 import "../styles/global.css";
+import { db } from "../db/index.js";
+import { mensajes } from "../db/schema.js";
+import { eq } from "drizzle-orm";
 
 const { title = "Panel | Remolino Folklórico" } = Astro.props;
 const session = Astro.locals.session;
 const currentPath = Astro.url.pathname;
+
+let noLeidos = 0;
+if (session) {
+    const pendientes = await db
+        .select()
+        .from(mensajes)
+        .where(eq(mensajes.leido, false));
+    noLeidos = pendientes.length;
+}
 ---
 
 <!doctype html>
@@ -40,6 +52,23 @@ const currentPath = Astro.url.pathname;
                             },
                         ]}>Galería</a
                     >
+                    <a
+                        href="/admin/mensajes"
+                        class:list={[
+                            {
+                                active: currentPath.startsWith(
+                                    "/admin/mensajes",
+                                ),
+                            },
+                        ]}
+                    >
+                        Mensajes
+                        {
+                            noLeidos > 0 && (
+                                <span class="nav-badge">{noLeidos}</span>
+                            )
+                        }
+                    </a>
                 </nav>
 
                 <div class="admin-user">
@@ -70,7 +99,7 @@ const currentPath = Astro.url.pathname;
                                 d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
                             ></path>
                         </svg>
-                        Salir
+                        Cerrar sesión
                     </button>
                 </div>
             </div>
@@ -148,7 +177,7 @@ const currentPath = Astro.url.pathname;
                 font-size: 0.9rem;
                 display: inline-flex;
                 align-items: center;
-                gap: 0.3rem;
+                gap: 0.4rem;
                 padding: 0.4rem 0;
                 border-bottom: 1px solid transparent;
                 transition:
@@ -161,6 +190,20 @@ const currentPath = Astro.url.pathname;
             .admin-nav a.active {
                 color: var(--accent-soft);
                 border-bottom-color: var(--accent-soft);
+            }
+            .nav-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 0.4rem;
+                background: var(--accent);
+                color: var(--text);
+                border-radius: 9px;
+                font-size: 0.65rem;
+                font-weight: 600;
+                line-height: 1;
             }
             .admin-user {
                 display: flex;

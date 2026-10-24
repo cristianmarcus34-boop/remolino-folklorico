@@ -1,0 +1,549 @@
+---
+import "../styles/global.css";
+import Layout from "../layouts/layout.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+
+export const prerender = false;
+---
+
+<Layout
+    title="Contrataciones | Remolino Folklórico"
+    description="Contratá a Remolino Folklórico para tu peña, festival o evento privado. Ballet folclórico integrado por mujeres, con talleres y presentaciones a medida."
+>
+    <section class="page-hero">
+        <div class="container">
+            <p class="kicker">Contrataciones</p>
+            <h1>Llevá el folclor a tu evento</h1>
+            <p class="hero-subtitle">
+                Peñas, festivales, eventos privados y talleres. Coordinamos una
+                presentación a medida para tu público.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <p class="section-kicker">Qué ofrecemos</p>
+            <h2>Presentaciones para cada ocasión</h2>
+            <div class="servicios-grid">
+                <div class="servicio-card reveal">
+                    <h3>Peñas y festivales</h3>
+                    <p>
+                        Presentaciones de danza folclórica con coreografías
+                        tradicionales y trajes típicos. Adaptamos el repertorio
+                        al tipo de evento.
+                    </p>
+                </div>
+                <div class="servicio-card reveal">
+                    <h3>Eventos privados</h3>
+                    <p>
+                        Cumpleaños, casamientos, aniversarios y celebraciones.
+                        Llevamos el folclor a tu fiesta con un show a medida.
+                    </p>
+                </div>
+                <div class="servicio-card reveal">
+                    <h3>Talleres</h3>
+                    <p>
+                        Clases de danzas folclóricas para principiantes. Una
+                        forma de acercar nuestras tradiciones a tu comunidad o
+                        institución.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-soft">
+        <div class="container reveal">
+            <p class="section-kicker">Qué incluye</p>
+            <h2>Un show completo, coordinado con vos</h2>
+            <ul class="incluye-list">
+                <li>
+                    Ballet integrado por mujeres, con vestuario tradicional.
+                </li>
+                <li>Repertorio adaptado al tipo de evento y al público.</li>
+                <li>
+                    Duración y cantidad de bailarinas a coordinar según la
+                    ocasión.
+                </li>
+                <li>Posibilidad de sumar talleres o clases abiertas.</li>
+                <li>Coordinación previa de logística, horarios y escenario.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <div class="container form-container">
+            <p class="section-kicker">Contacto</p>
+            <h2>Contanos sobre tu evento</h2>
+            <p class="form-subtitle">
+                Completá el formulario y te respondemos a la brevedad. También
+                podés escribirnos directo por WhatsApp.
+            </p>
+
+            <form id="contacto-form" class="contacto-form">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="nombre">Nombre *</label>
+                        <input
+                            id="nombre"
+                            name="nombre"
+                            type="text"
+                            required
+                            placeholder="Tu nombre"
+                        />
+                    </div>
+                    <div class="form-field">
+                        <label for="email">Email *</label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            required
+                            placeholder="tu@email.com"
+                        />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="telefono">Teléfono / WhatsApp</label>
+                        <input
+                            id="telefono"
+                            name="telefono"
+                            type="tel"
+                            placeholder="11 1234-5678"
+                        />
+                    </div>
+                    <div class="form-field">
+                        <label for="tipoEvento">Tipo de evento</label>
+                        <select id="tipoEvento" name="tipoEvento">
+                            <option value="">Seleccioná una opción</option>
+                            <option value="peña">Peña</option>
+                            <option value="festival">Festival</option>
+                            <option value="evento-privado"
+                                >Evento privado</option
+                            >
+                            <option value="taller">Taller</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="fechaEvento">Fecha estimada del evento</label>
+                    <input
+                        id="fechaEvento"
+                        name="fechaEvento"
+                        type="text"
+                        placeholder="Ej: 15 de noviembre de 2026"
+                    />
+                </div>
+
+                <div class="form-field">
+                    <label for="mensaje">Mensaje *</label>
+                    <textarea
+                        id="mensaje"
+                        name="mensaje"
+                        rows="5"
+                        required
+                        placeholder="Contanos sobre tu evento: lugar, cantidad de público, qué tenés en mente..."
+                    ></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn" id="submit-btn">
+                        <span class="btn-label">Enviar consulta</span>
+                        <span class="btn-spinner" aria-hidden="true"></span>
+                    </button>
+                    <a
+                        href="https://wa.me/5491128386926?text=Hola%2C%20los%20contacto%20desde%20la%20web%20de%20Remolino%20Folkl%C3%B3rico.%20Quisiera%20consultar%20por%20una%20presentaci%C3%B3n."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-whatsapp"
+                    >
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
+                            ></path>
+                        </svg>
+                        WhatsApp
+                    </a>
+                </div>
+
+                <p
+                    id="error-msg"
+                    class="form-error"
+                    role="alert"
+                    style="display: none;"
+                >
+                </p>
+                <p
+                    id="success-msg"
+                    class="form-success"
+                    role="alert"
+                    style="display: none;"
+                >
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <ScrollReveal />
+
+    <script>
+        const form = document.getElementById("contacto-form");
+        const errorMsg = document.getElementById("error-msg");
+        const successMsg = document.getElementById("success-msg");
+        const submitBtn = document.getElementById("submit-btn");
+
+        if (form && errorMsg && successMsg && submitBtn) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                successMsg.style.display = "none";
+
+                /**
+                 * @param {string} id
+                 * @returns {string}
+                 */
+                const elNombre = document.getElementById(
+                    "nombre",
+                ) as HTMLInputElement | null;
+                const elEmail = document.getElementById(
+                    "email",
+                ) as HTMLInputElement | null;
+                const elTelefono = document.getElementById(
+                    "telefono",
+                ) as HTMLInputElement | null;
+                const elTipoEvento = document.getElementById(
+                    "tipoEvento",
+                ) as HTMLSelectElement | null;
+                const elFechaEvento = document.getElementById(
+                    "fechaEvento",
+                ) as HTMLInputElement | null;
+                const elMensaje = document.getElementById(
+                    "mensaje",
+                ) as HTMLTextAreaElement | null;
+
+                const getVal = (
+                    el:
+                        | HTMLInputElement
+                        | HTMLSelectElement
+                        | HTMLTextAreaElement
+                        | null,
+                ): string => {
+                    return el && "value" in el && typeof el.value === "string"
+                        ? el.value.trim()
+                        : "";
+                };
+                const payload = {
+                    nombre: getVal(elNombre),
+                    email: getVal(elEmail),
+                    telefono: getVal(elTelefono),
+                    tipoEvento: getVal(elTipoEvento),
+                    fechaEvento: getVal(elFechaEvento),
+                    mensaje: getVal(elMensaje),
+                };
+
+                if (!payload.nombre || !payload.email || !payload.mensaje) {
+                    errorMsg.textContent = "Completá nombre, email y mensaje.";
+                    errorMsg.style.display = "block";
+                    return;
+                }
+
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.classList.add("is-loading");
+
+                try {
+                    const res = await fetch("/api/contacto", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    });
+
+                    if (res.ok) {
+                        if (form instanceof HTMLFormElement) {
+                            form.reset();
+                        }
+                        successMsg.textContent =
+                            "¡Gracias! Tu consulta fue enviada. Te respondemos a la brevedad.";
+                        successMsg.style.display = "block";
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        errorMsg.textContent =
+                            data.error || "Error al enviar. Intentá de nuevo.";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    errorMsg.textContent =
+                        "Error de conexión. Intentá de nuevo.";
+                    errorMsg.style.display = "block";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.classList.remove("is-loading");
+                }
+            });
+        }
+    </script>
+
+    <style>
+        .page-hero {
+            padding: 6rem 0 3rem;
+            background: radial-gradient(
+                ellipse at top,
+                rgba(199, 91, 57, 0.12),
+                transparent 60%
+            );
+        }
+        .kicker {
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 0.8rem;
+            color: var(--accent-soft);
+            margin-bottom: 1rem;
+        }
+        .hero-subtitle {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+        .section-kicker {
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 0.7rem;
+            color: var(--accent-soft);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .servicios-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .servicio-card {
+            background: var(--bg-soft);
+            border: 1px solid rgba(212, 168, 83, 0.15);
+            border-radius: 4px;
+            padding: 2rem;
+            transition:
+                border-color 0.2s,
+                transform 0.2s;
+        }
+        .servicio-card:hover {
+            border-color: rgba(212, 168, 83, 0.35);
+            transform: translateY(-2px);
+        }
+        .servicio-card h3 {
+            color: var(--accent-soft);
+            margin-bottom: 0.8rem;
+        }
+        .servicio-card p {
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+        .bg-soft {
+            background: var(--bg-soft);
+        }
+        .incluye-list {
+            list-style: none;
+            max-width: 720px;
+            margin-top: 1.5rem;
+        }
+        .incluye-list li {
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.8;
+            padding-left: 1.8rem;
+            position: relative;
+            margin-bottom: 0.6rem;
+        }
+        .incluye-list li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-soft);
+        }
+        .form-container {
+            max-width: 720px;
+        }
+        .form-subtitle {
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+        .contacto-form {
+            background: var(--bg-soft);
+            border: 1px solid rgba(212, 168, 83, 0.15);
+            border-radius: 6px;
+            padding: 2rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-field {
+            margin-bottom: 1.2rem;
+        }
+        .form-field label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--bg);
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            color: var(--text);
+            border-radius: 3px;
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--accent-soft);
+            box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
+        }
+        .form-field textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            background: var(--accent);
+            color: var(--text);
+            padding: 1rem 2.4rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            transition:
+                background 0.3s ease,
+                transform 0.2s ease;
+            min-height: 48px;
+        }
+        .btn svg {
+            display: block;
+            flex-shrink: 0;
+            position: relative;
+            top: 1px;
+        }
+        .btn:hover:not(:disabled) {
+            background: #a84a2d;
+            color: var(--text);
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .btn-whatsapp {
+            background: rgba(212, 168, 83, 0.1);
+            color: var(--accent-soft);
+            border: 1px solid rgba(212, 168, 83, 0.3);
+        }
+        .btn-whatsapp:hover:not(:disabled) {
+            background: rgba(212, 168, 83, 0.18);
+            color: var(--text);
+        }
+        .btn-spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(245, 240, 232, 0.3);
+            border-top-color: var(--text);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .btn.is-loading .btn-spinner {
+            display: inline-block;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .form-error {
+            color: #ff8a7a;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            padding: 0.7rem 0.9rem;
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 3px solid #e74c3c;
+            border-radius: 2px;
+        }
+        .form-success {
+            color: #81c784;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            padding: 0.8rem 1rem;
+            background: rgba(76, 175, 80, 0.12);
+            border-left: 3px solid #4caf50;
+            border-radius: 2px;
+        }
+        @media (max-width: 768px) {
+            .servicios-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .page-hero {
+                padding: 4rem 0 2rem;
+            }
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            .contacto-form {
+                padding: 1.5rem;
+            }
+            .form-actions {
+                flex-direction: column;
+            }
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</Layout>
