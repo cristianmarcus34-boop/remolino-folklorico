@@ -40,28 +40,23 @@ const currentPath = Astro.url.pathname;
                             },
                         ]}>Galería</a
                     >
-                    <a
-                        href="/"
-                        target="_blank"
-                        rel="noopener"
-                        class="admin-nav-external"
-                    >
-                        Ver sitio
+                </nav>
+
+                <div class="admin-user">
+                    <span class="admin-user-email">{session?.user?.email}</span>
+                    <a href="/" class="admin-back-btn" title="Volver al sitio">
                         <svg
-                            width="12"
-                            height="12"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
                         >
-                            <path d="M7 17L17 7M17 7H7M17 7V17"></path>
+                            <path d="M19 12H5M12 19l-7-7 7-7"></path>
                         </svg>
+                        Volver al sitio
                     </a>
-                </nav>
-
-                <div class="admin-user">
-                    <span class="admin-user-email">{session?.user?.email}</span>
                     <button id="logout-btn" class="admin-logout-btn">
                         <svg
                             width="14"
@@ -167,21 +162,39 @@ const currentPath = Astro.url.pathname;
                 color: var(--accent-soft);
                 border-bottom-color: var(--accent-soft);
             }
-            .admin-nav-external {
-                font-size: 0.8rem;
-            }
             .admin-user {
                 display: flex;
                 align-items: center;
-                gap: 1rem;
+                gap: 0.8rem;
                 font-size: 0.8rem;
                 color: var(--text-muted);
             }
             .admin-user-email {
-                max-width: 180px;
+                max-width: 160px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+            }
+            .admin-back-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                background: rgba(212, 168, 83, 0.08);
+                border: 1px solid rgba(212, 168, 83, 0.2);
+                color: var(--accent-soft);
+                padding: 0.45rem 0.9rem;
+                border-radius: 2px;
+                font-size: 0.75rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                cursor: pointer;
+                transition: all 0.2s;
+                text-decoration: none;
+            }
+            .admin-back-btn:hover {
+                background: rgba(212, 168, 83, 0.15);
+                border-color: var(--accent-soft);
+                color: var(--text);
             }
             .admin-logout-btn {
                 display: inline-flex;
@@ -202,7 +215,7 @@ const currentPath = Astro.url.pathname;
                 border-color: var(--accent);
                 color: var(--accent-soft);
             }
-            @media (max-width: 768px) {
+            @media (max-width: 900px) {
                 .admin-header-inner {
                     flex-direction: column;
                     align-items: flex-start;
@@ -214,6 +227,10 @@ const currentPath = Astro.url.pathname;
                 .admin-user {
                     width: 100%;
                     justify-content: space-between;
+                    flex-wrap: wrap;
+                }
+                .admin-user-email {
+                    display: none;
                 }
             }
         </style>

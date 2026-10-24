@@ -29,6 +29,24 @@ const { title = "Remolino Folklórico" } = Astro.props;
           <a href="/nosotros">Nosotros</a>
           <a href="/galeria">Galería</a>
           <a href="/eventos">Eventos</a>
+          <a
+            href="/admin"
+            class="admin-link"
+            title="Panel de administración"
+            aria-label="Panel de administración"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </a>
         </nav>
       </div>
     </header>
@@ -40,6 +58,9 @@ const { title = "Remolino Folklórico" } = Astro.props;
     <footer class="site-footer">
       <div class="container">
         <p>&copy; 2026 Remolino Folklórico. Todos los derechos reservados.</p>
+        <p class="footer-admin">
+          <a href="/admin">Panel de administración</a>
+        </p>
       </div>
     </footer>
 
@@ -69,6 +90,7 @@ const { title = "Remolino Folklórico" } = Astro.props;
       nav {
         display: flex;
         gap: 2rem;
+        align-items: center;
       }
       nav a {
         color: var(--text-muted);
@@ -79,6 +101,18 @@ const { title = "Remolino Folklórico" } = Astro.props;
       nav a:hover {
         color: var(--accent-soft);
       }
+      nav a.admin-link {
+        display: inline-flex;
+        align-items: center;
+        opacity: 0.5;
+        transition:
+          opacity 0.2s ease,
+          color 0.2s ease;
+      }
+      nav a.admin-link:hover {
+        opacity: 1;
+        color: var(--accent-soft);
+      }
       .site-footer {
         border-top: 1px solid rgba(212, 168, 83, 0.1);
         padding: 2.5rem 0;
@@ -86,6 +120,23 @@ const { title = "Remolino Folklórico" } = Astro.props;
         color: var(--text-muted);
         font-size: 0.85rem;
         letter-spacing: 0.02em;
+      }
+      .footer-admin {
+        margin-top: 0.8rem;
+        font-size: 0.7rem;
+        opacity: 0.5;
+        transition: opacity 0.2s ease;
+      }
+      .footer-admin:hover {
+        opacity: 0.9;
+      }
+      .footer-admin a {
+        color: var(--text-muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .footer-admin a:hover {
+        color: var(--accent-soft);
       }
       @media (max-width: 640px) {
         .header-inner {
