@@ -23,6 +23,7 @@ export const PUT = async ({ request, params }) => {
             lugar: body.lugar,
             fecha: new Date(body.fecha),
             hora: body.hora || null,
+            imagenUrl: body.imagenUrl || null,
         })
         .where(eq(eventos.id, Number(params.id)))
         .returning();

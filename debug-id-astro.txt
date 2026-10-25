@@ -1,0 +1,401 @@
+﻿---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { db } from "../../../db/index.js";
+import { eventos, galeria } from "../../../db/schema.js";
+import { eq, desc } from "drizzle-orm";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+    return Astro.redirect("/login");
+}
+
+const id = Number(Astro.params.id);
+const [evento] = await db.select().from(eventos).where(eq(eventos.id, id));
+
+if (!evento) {
+    return Astro.redirect("/admin");
+}
+
+const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
+const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
+---
+
+<AdminLayout title="Editar evento | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container" style="max-width: 600px;">
+            <a
+                href="/admin"
+                class="admin-link-btn"
+                style="margin-bottom: 1.5rem; display: inline-block;"
+                >â† Volver al panel</a
+            >
+
+            <h1 class="admin-page-title">Editar evento</h1>
+            <p class="admin-page-subtitle">
+                ModificÃ¡ los datos y guardÃ¡ los cambios.
+            </p>
+
+            <form id="evento-form" class="admin-card">
+                <div class="admin-field">
+                    <label class="admin-label" for="titulo">TÃ­tulo *</label>
+                    <input
+                        id="titulo"
+                        type="text"
+                        name="titulo"
+                        value={evento.titulo}
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="lugar">Lugar *</label>
+                    <input
+                        id="lugar"
+                        type="text"
+                        name="lugar"
+                        value={evento.lugar}
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="fecha">Fecha *</label>
+                    <input
+                        id="fecha"
+                        type="date"
+                        name="fecha"
+                        value={fechaISO}
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="hora">Hora</label>
+                    <input
+                        id="hora"
+                        type="text"
+                        name="hora"
+                        value={evento.hora || ""}
+                        class="admin-input"
+                        placeholder="Ej: 21:00 hs"
+                    />
+                </div>
+
+                <div class="admin-field">
+                    <label class="admin-label"
+                        >Imagen del evento (opcional)</label
+                    >
+
+                    {
+                        evento.imagenUrl && (
+                            <div style="margin-bottom: 0.8rem;">
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                                    Imagen actual:
+                                </p>
+                                <img
+                                    src={evento.imagenUrl}
+                                    alt={evento.titulo}
+                                    style="max-width: 200px; max-height: 150px; border-radius: 3px; border: 1px solid rgba(212,168,83,0.2);"
+                                />
+                            </div>
+                        )
+                    }
+
+                    <div class="imagen-opciones">
+                        <div class="imagen-tabs">
+                            <button
+                                type="button"
+                                class="imagen-tab active"
+                                data-tab="galeria">Elegir de la galerÃ­a</button
+                            >
+                            <button
+                                type="button"
+                                class="imagen-tab"
+                                data-tab="subir">Subir nueva</button
+                            >
+                        </div>
+
+                        <div class="imagen-panel active" data-panel="galeria">
+                            <select
+                                id="imagenUrl"
+                                name="imagenUrl"
+                                class="admin-input"
+                            >
+                                <option value="" selected={!evento.imagenUrl}
+                                    >Sin imagen</option
+                                >
+                                {
+                                    imagenes.map((img) => (
+                                        <option
+                                            value={img.url}
+                                            selected={
+                                                evento.imagenUrl === img.url
+                                            }
+                                        >
+                                            {img.alt}
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+
+                        <div class="imagen-panel" data-panel="subir">
+                            <input
+                                type="file"
+                                id="imagenFile"
+                                accept="image/*"
+                                class="admin-input"
+                                style="padding: 0.5rem;"
+                            />
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                            >
+                                JPG, PNG o WebP Â· mÃ¡x 4.5 MB. La imagen se
+                                guarda en la galerÃ­a y reemplaza la actual.
+                            </p>
+                            <div
+                                id="preview-container"
+                                style="display: none; margin-top: 0.8rem;"
+                            >
+                                <img
+                                    id="preview"
+                                    style="max-width: 100%; max-height: 200px; border-radius: 3px;"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-actions">
+                    <button type="submit" class="btn" id="submit-btn"
+                        >Guardar cambios</button
+                    >
+                    <a href="/admin" class="admin-link-btn">Cancelar</a>
+                </div>
+                <p
+                    id="error-msg"
+                    class="admin-msg error"
+                    style="display: none;"
+                >
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <style>
+        .imagen-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .imagen-tab {
+            background: none;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            color: var(--text-muted);
+            padding: 0.4rem 0.9rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .imagen-tab:hover {
+            border-color: var(--accent-soft);
+            color: var(--accent-soft);
+        }
+        .imagen-tab.active {
+            background: rgba(212, 168, 83, 0.15);
+            border-color: var(--accent-soft);
+            color: var(--accent-soft);
+        }
+        .imagen-panel {
+            display: none;
+        }
+        .imagen-panel.active {
+            display: block;
+        }
+    </style>
+
+    <script define:vars={{ id }}>
+        const form = document.querySelector<HTMLFormElement>("#evento-form");
+        const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+        const imagenFile = document.getElementById("imagenFile");
+        const preview = document.getElementById("preview");
+        const previewContainer = document.getElementById("preview-container");
+
+        const tabs = document.querySelectorAll(".imagen-tab");
+        const panels = document.querySelectorAll(".imagen-panel");
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const target = tab.getAttribute("data-tab");
+                tabs.forEach((t) => t.classList.remove("active"));
+                tab.classList.add("active");
+                panels.forEach((p) => {
+                    p.classList.toggle(
+                        "active",
+                        p.getAttribute("data-panel") === target,
+                    );
+                });
+            });
+        });
+
+        if (imagenFile && "files" in imagenFile) {
+            imagenFile.addEventListener("change", () => {
+                const file = imagenFile.files && imagenFile.files[0];
+                if (!file) {
+                    if (previewContainer && "style" in previewContainer) {
+                        previewContainer.style.display = "none";
+                    }
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (preview && "src" in preview) {
+                        preview.src = String(e.target ? e.target.result : "");
+                    }
+                    if (previewContainer && "style" in previewContainer) {
+                        previewContainer.style.display = "block";
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (form && errorMsg && submitBtn) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.textContent = "Guardando...";
+
+                const elTitulo = document.getElementById("titulo");
+                const elLugar = document.getElementById("lugar");
+                const elFecha = document.getElementById("fecha");
+                const elHora = document.getElementById("hora");
+                const elImagenUrl = document.getElementById("imagenUrl");
+
+                const titulo =
+                    elTitulo &&
+                    "value" in elTitulo &&
+                    typeof elTitulo.value === "string"
+                        ? elTitulo.value
+                        : "";
+                const lugar =
+                    elLugar &&
+                    "value" in elLugar &&
+                    typeof elLugar.value === "string"
+                        ? elLugar.value
+                        : "";
+                const fecha =
+                    elFecha &&
+                    "value" in elFecha &&
+                    typeof elFecha.value === "string"
+                        ? elFecha.value
+                        : "";
+                const hora =
+                    elHora &&
+                    "value" in elHora &&
+                    typeof elHora.value === "string"
+                        ? elHora.value
+                        : "";
+                let imagenUrl =
+                    elImagenUrl &&
+                    "value" in elImagenUrl &&
+                    typeof elImagenUrl.value === "string"
+                        ? elImagenUrl.value
+                        : "";
+
+                console.log("Payload inicial:", {
+                    titulo,
+                    lugar,
+                    fecha,
+                    hora,
+                    imagenUrl,
+                });
+
+                try {
+                    const file =
+                        imagenFile && "files" in imagenFile && imagenFile.files
+                            ? imagenFile.files[0]
+                            : null;
+                    if (file) {
+                        console.log("Subiendo archivo:", file.name);
+                        const uploadData = new FormData();
+                        uploadData.append("file", file);
+                        const uploadRes = await fetch("/api/upload", {
+                            method: "POST",
+                            body: uploadData,
+                            credentials: "include",
+                        });
+                        if (!uploadRes.ok) {
+                            const data = await uploadRes.json();
+                            throw new Error(
+                                data.error || "Error al subir la imagen",
+                            );
+                        }
+                        const { url } = await uploadRes.json();
+                        console.log("Imagen subida:", url);
+                        imagenUrl = url;
+
+                        const alt = titulo || "Imagen de evento";
+                        const galeriaRes = await fetch("/api/galeria", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include",
+                            body: JSON.stringify({ alt, url, seccion: null }),
+                        });
+                        console.log("Guardado en galerÃ­a:", galeriaRes.status);
+                    }
+
+                    console.log("Payload final:", {
+                        titulo,
+                        lugar,
+                        fecha,
+                        hora,
+                        imagenUrl,
+                    });
+
+                    const res = await fetch(`/api/eventos/${id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            titulo,
+                            lugar,
+                            fecha,
+                            hora,
+                            imagenUrl,
+                        }),
+                    });
+
+                    console.log("PUT status:", res.status);
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        console.log("PUT response:", data);
+                        window.location.href = "/admin";
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        console.error("PUT error:", data);
+                        errorMsg.textContent = data.error || "Error al guardar";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    console.error("Error en submit:", err);
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexiÃ³n";
+                    errorMsg.style.display = "block";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.textContent = "Guardar cambios";
+                }
+            });
+        }
+    </script>
+</AdminLayout>
+

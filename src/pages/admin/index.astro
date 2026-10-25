@@ -2,6 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { db } from "../../db/index.js";
 import { eventos } from "../../db/schema.js";
+import { desc } from "drizzle-orm";
 
 export const prerender = false;
 
@@ -10,7 +11,10 @@ if (!session) {
   return Astro.redirect("/login");
 }
 
-const listaEventos = await db.select().from(eventos);
+const listaEventos = await db
+  .select()
+  .from(eventos)
+  .orderBy(desc(eventos.fecha));
 ---
 
 <AdminLayout title="Eventos | Panel">
@@ -43,6 +47,33 @@ const listaEventos = await db.select().from(eventos);
           <div class="eventos-grid">
             {listaEventos.map((ev) => (
               <div class="admin-card evento-card">
+                <div class="evento-card-imagen">
+                  {ev.imagenUrl ? (
+                    <img src={ev.imagenUrl} alt={ev.titulo} loading="lazy" />
+                  ) : (
+                    <div class="evento-card-imagen-placeholder">
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <rect
+                          x="3"
+                          y="3"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          ry="2"
+                        />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
                 <div class="evento-card-fecha">
                   <span class="evento-card-dia">
                     {new Date(ev.fecha).getDate()}
@@ -122,14 +153,44 @@ const listaEventos = await db.select().from(eventos);
     .evento-card {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1.2rem;
       padding: 1rem 1.5rem;
+      transition: border-color 0.2s ease;
+    }
+    .evento-card-imagen {
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      overflow: hidden;
+      background: rgba(212, 168, 83, 0.06);
+      border: 1px solid rgba(212, 168, 83, 0.12);
+    }
+    .evento-card-imagen img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .evento-card:hover .evento-card-imagen img {
+      transform: scale(1.05);
+    }
+    .evento-card-imagen-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      opacity: 0.4;
     }
     .evento-card-fecha {
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 60px;
+      min-width: 55px;
+      flex-shrink: 0;
     }
     .evento-card-dia {
       font-family: var(--font-serif);
@@ -168,6 +229,11 @@ const listaEventos = await db.select().from(eventos);
     @media (max-width: 640px) {
       .evento-card {
         flex-wrap: wrap;
+        gap: 1rem;
+      }
+      .evento-card-imagen {
+        width: 64px;
+        height: 64px;
       }
       .evento-card-actions {
         width: 100%;

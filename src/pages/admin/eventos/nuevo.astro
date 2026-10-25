@@ -1,5 +1,8 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { db } from "../../../db/index.js";
+import { galeria } from "../../../db/schema.js";
+import { desc } from "drizzle-orm";
 
 export const prerender = false;
 
@@ -7,6 +10,8 @@ const session = Astro.locals.session;
 if (!session) {
     return Astro.redirect("/login");
 }
+
+const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
 ---
 
 <AdminLayout title="Nuevo evento | Panel">
@@ -68,8 +73,73 @@ if (!session) {
                     />
                 </div>
 
+                <div class="admin-field">
+                    <label class="admin-label"
+                        >Imagen del evento (opcional)</label
+                    >
+
+                    <div class="imagen-opciones">
+                        <div class="imagen-tabs">
+                            <button
+                                type="button"
+                                class="imagen-tab active"
+                                data-tab="galeria">Elegir de la galería</button
+                            >
+                            <button
+                                type="button"
+                                class="imagen-tab"
+                                data-tab="subir">Subir nueva</button
+                            >
+                        </div>
+
+                        <div class="imagen-panel active" data-panel="galeria">
+                            <select
+                                id="imagenUrl"
+                                name="imagenUrl"
+                                class="admin-input"
+                            >
+                                <option value="">Sin imagen</option>
+                                {
+                                    imagenes.map((img) => (
+                                        <option value={img.url}>
+                                            {img.alt}
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+
+                        <div class="imagen-panel" data-panel="subir">
+                            <input
+                                type="file"
+                                id="imagenFile"
+                                accept="image/*"
+                                class="admin-input"
+                                style="padding: 0.5rem;"
+                            />
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                            >
+                                JPG, PNG o WebP · máx 4.5 MB. La imagen se
+                                guarda en la galería y se asigna al evento.
+                            </p>
+                            <div
+                                id="preview-container"
+                                style="display: none; margin-top: 0.8rem;"
+                            >
+                                <img
+                                    id="preview"
+                                    style="max-width: 100%; max-height: 200px; border-radius: 3px;"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="admin-actions">
-                    <button type="submit" class="btn">Guardar evento</button>
+                    <button type="submit" class="btn" id="submit-btn"
+                        >Guardar evento</button
+                    >
                     <a href="/admin" class="admin-link-btn">Cancelar</a>
                 </div>
                 <p
@@ -82,27 +152,176 @@ if (!session) {
         </div>
     </section>
 
+    <style>
+        .imagen-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .imagen-tab {
+            background: none;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            color: var(--text-muted);
+            padding: 0.4rem 0.9rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .imagen-tab:hover {
+            border-color: var(--accent-soft);
+            color: var(--accent-soft);
+        }
+        .imagen-tab.active {
+            background: rgba(212, 168, 83, 0.15);
+            border-color: var(--accent-soft);
+            color: var(--accent-soft);
+        }
+        .imagen-panel {
+            display: none;
+        }
+        .imagen-panel.active {
+            display: block;
+        }
+    </style>
+
     <script>
         const form = document.querySelector<HTMLFormElement>("#evento-form");
         const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+        const imagenFile = document.getElementById(
+            "imagenFile",
+        ) as HTMLInputElement | null;
+        const preview = document.getElementById(
+            "preview",
+        ) as HTMLImageElement | null;
+        const previewContainer = document.getElementById(
+            "preview-container",
+        ) as HTMLElement | null;
 
-        if (form && errorMsg) {
+        // Tabs
+        const tabs = document.querySelectorAll(".imagen-tab");
+        const panels = document.querySelectorAll(".imagen-panel");
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const target = tab.getAttribute("data-tab");
+                tabs.forEach((t) => t.classList.remove("active"));
+                tab.classList.add("active");
+                panels.forEach((p) => {
+                    p.classList.toggle(
+                        "active",
+                        p.getAttribute("data-panel") === target,
+                    );
+                });
+            });
+        });
+
+        // Preview de imagen
+        if (imagenFile) {
+            imagenFile.addEventListener("change", () => {
+                const file = imagenFile.files && imagenFile.files[0];
+                if (!file || !preview || !previewContainer) {
+                    if (previewContainer)
+                        previewContainer.style.display = "none";
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = String(e.target ? e.target.result : "");
+                    previewContainer.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (form && errorMsg && submitBtn) {
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 errorMsg.style.display = "none";
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.textContent = "Guardando...";
 
-                const formData = new FormData(form);
+                const elTitulo = document.getElementById("titulo");
+                const elLugar = document.getElementById("lugar");
+                const elFecha = document.getElementById("fecha");
+                const elHora = document.getElementById("hora");
+                const elImagenUrl = document.getElementById("imagenUrl");
+
+                const titulo =
+                    elTitulo &&
+                    "value" in elTitulo &&
+                    typeof elTitulo.value === "string"
+                        ? elTitulo.value
+                        : "";
+                const lugar =
+                    elLugar &&
+                    "value" in elLugar &&
+                    typeof elLugar.value === "string"
+                        ? elLugar.value
+                        : "";
+                const fecha =
+                    elFecha &&
+                    "value" in elFecha &&
+                    typeof elFecha.value === "string"
+                        ? elFecha.value
+                        : "";
+                const hora =
+                    elHora &&
+                    "value" in elHora &&
+                    typeof elHora.value === "string"
+                        ? elHora.value
+                        : "";
+                let imagenUrl =
+                    elImagenUrl &&
+                    "value" in elImagenUrl &&
+                    typeof elImagenUrl.value === "string"
+                        ? elImagenUrl.value
+                        : "";
 
                 try {
+                    // Si hay archivo nuevo, subirlo primero
+                    const file =
+                        imagenFile && imagenFile.files
+                            ? imagenFile.files[0]
+                            : null;
+                    if (file) {
+                        const uploadData = new FormData();
+                        uploadData.append("file", file);
+                        const uploadRes = await fetch("/api/upload", {
+                            method: "POST",
+                            body: uploadData,
+                            credentials: "include",
+                        });
+                        if (!uploadRes.ok) {
+                            const data = await uploadRes.json();
+                            throw new Error(
+                                data.error || "Error al subir la imagen",
+                            );
+                        }
+                        const { url } = await uploadRes.json();
+                        imagenUrl = url;
+
+                        // Guardar también en la galería
+                        const alt = titulo || "Imagen de evento";
+                        await fetch("/api/galeria", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include",
+                            body: JSON.stringify({ alt, url, seccion: null }),
+                        });
+                    }
+
                     const res = await fetch("/api/eventos", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         credentials: "include",
                         body: JSON.stringify({
-                            titulo: String(formData.get("titulo") || ""),
-                            lugar: String(formData.get("lugar") || ""),
-                            fecha: String(formData.get("fecha") || ""),
-                            hora: String(formData.get("hora") || ""),
+                            titulo,
+                            lugar,
+                            fecha,
+                            hora,
+                            imagenUrl,
                         }),
                     });
 
@@ -114,8 +333,14 @@ if (!session) {
                         errorMsg.style.display = "block";
                     }
                 } catch (err) {
-                    errorMsg.textContent = "Error de conexión";
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
                     errorMsg.style.display = "block";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.textContent = "Guardar evento";
                 }
             });
         }

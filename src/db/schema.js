@@ -96,6 +96,7 @@ export const eventos = pgTable('eventos', {
     lugar: varchar('lugar', { length: 255 }).notNull(),
     fecha: timestamp('fecha', { withTimezone: true }).notNull(),
     hora: varchar('hora', { length: 50 }),
+    imagenUrl: text('imagen_url'),
     createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -103,7 +104,7 @@ export const galeria = pgTable('galeria', {
     id: serial('id').primaryKey(),
     alt: varchar('alt', { length: 255 }).notNull(),
     url: text('url').notNull(),
-    seccion: varchar('seccion', { length: 50 }), // 'nosotros', 'galeria_destacada', 'eventos', null
+    seccion: varchar('seccion', { length: 50 }),
     createdAt: timestamp('created_at').defaultNow(),
 });
 
