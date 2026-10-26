@@ -120,6 +120,14 @@ export const mensajes = pgTable('mensajes', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const videos = pgTable('videos', {
+    id: serial('id').primaryKey(),
+    titulo: varchar('titulo', { length: 255 }).notNull(),
+    url: text('url').notNull(),
+    descripcion: text('descripcion'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // ============================
 // Relaciones de Better Auth
 // ============================

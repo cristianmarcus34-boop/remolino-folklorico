@@ -1,0 +1,171 @@
+---
+// src/pages/videos.astro
+import "../styles/global.css";
+import Layout from "../layouts/layout.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+import { db } from "../db/index.js";
+import { videos } from "../db/schema.js";
+import { desc } from "drizzle-orm";
+
+export const prerender = false;
+
+const listaVideos = await db.select().from(videos).orderBy(desc(videos.id));
+
+const getYouTubeId = (url: string): string | null => {
+    if (!url) return null;
+    const match = url.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return match ? match[1] : null;
+};
+---
+
+<Layout
+    title="Videos | Remolino Folklórico"
+    description="Videos de las presentaciones del ballet folclórico Remolino Folklórico. Danza, tradición y color en movimiento."
+>
+    <section class="page-hero">
+        <div class="container">
+            <p class="kicker">Nuestro trabajo en movimiento</p>
+            <h1>Videos</h1>
+            <p class="hero-subtitle">
+                Fragmentos de nuestras presentaciones, ensayos y shows.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <div class="container reveal">
+            {
+                listaVideos.length === 0 ? (
+                    <p style="color: var(--text-muted); font-style: italic;">
+                        Próximamente videos de nuestras presentaciones.
+                    </p>
+                ) : (
+                    <div class="videos-grid">
+                        {listaVideos.map((video) => {
+                            const videoId = getYouTubeId(video.url);
+                            return (
+                                <div class="video-item">
+                                    <div class="video-wrapper">
+                                        {videoId ? (
+                                            <iframe
+                                                src={`https://www.youtube.com/embed/${videoId}`}
+                                                title={video.titulo}
+                                                frameborder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowfullscreen
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div class="video-invalid">
+                                                Video no disponible
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div class="video-info">
+                                        <h3>{video.titulo}</h3>
+                                        {video.descripcion && (
+                                            <p>{video.descripcion}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )
+            }
+        </div>
+    </section>
+
+    <ScrollReveal />
+
+    <style>
+        .page-hero {
+            padding: 6rem 0 3rem;
+            background: radial-gradient(
+                ellipse at top,
+                rgba(199, 91, 57, 0.12),
+                transparent 60%
+            );
+        }
+        .kicker {
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 0.8rem;
+            color: var(--accent-soft);
+            margin-bottom: 1rem;
+        }
+        .hero-subtitle {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+        .video-item {
+            background: var(--bg-soft);
+            border: 1px solid rgba(212, 168, 83, 0.12);
+            border-radius: 6px;
+            overflow: hidden;
+            transition:
+                border-color 0.2s,
+                transform 0.2s;
+        }
+        .video-item:hover {
+            border-color: rgba(212, 168, 83, 0.35);
+            transform: translateY(-2px);
+        }
+        .video-wrapper {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background: #000;
+        }
+        .video-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .video-invalid {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .video-info {
+            padding: 1.2rem;
+        }
+        .video-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.4rem;
+        }
+        .video-info p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+        @media (max-width: 768px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .page-hero {
+                padding: 4rem 0 2rem;
+            }
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</Layout>

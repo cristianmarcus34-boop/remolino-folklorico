@@ -1,0 +1,276 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { db } from "../../db/index.js";
+import { videos } from "../../db/schema.js";
+import { desc } from "drizzle-orm";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+    return Astro.redirect("/login");
+}
+
+const listaVideos = await db.select().from(videos).orderBy(desc(videos.id));
+
+// Función para extraer el ID de YouTube de una URL
+const getYouTubeId = (url: string): string | null => {
+    if (!url) return null;
+    const match = url.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return match ? match[1] : null;
+};
+---
+
+<AdminLayout title="Videos | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title">Videos</h1>
+                    <p class="admin-page-subtitle">
+                        Agregá videos de YouTube para mostrarlos en el sitio.
+                    </p>
+                </div>
+            </div>
+
+            <div class="admin-card" style="margin-bottom: 2.5rem;">
+                <form id="video-form">
+                    <div class="admin-field">
+                        <label class="admin-label" for="titulo">Título *</label>
+                        <input
+                            id="titulo"
+                            type="text"
+                            name="titulo"
+                            required
+                            class="admin-input"
+                            placeholder="Ej: Presentación en el Teatro Provincial"
+                        />
+                    </div>
+                    <div class="admin-field">
+                        <label class="admin-label" for="url"
+                            >URL de YouTube *</label
+                        >
+                        <input
+                            id="url"
+                            type="url"
+                            name="url"
+                            required
+                            class="admin-input"
+                            placeholder="https://www.youtube.com/watch?v=..."
+                        />
+                        <p
+                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                        >
+                            Pegá la URL del video de YouTube
+                            (youtube.com/watch?v=... o youtu.be/...).
+                        </p>
+                    </div>
+                    <div class="admin-field">
+                        <label class="admin-label" for="descripcion"
+                            >Descripción</label
+                        >
+                        <textarea
+                            id="descripcion"
+                            name="descripcion"
+                            rows="2"
+                            class="admin-input"
+                            placeholder="Breve descripción del video (opcional)"
+                        ></textarea>
+                    </div>
+                    <div class="admin-actions">
+                        <button type="submit" class="btn" id="submit-btn"
+                            >Agregar video</button
+                        >
+                        <span
+                            id="status-msg"
+                            style="font-size: 0.85rem; color: var(--text-muted);"
+                        ></span>
+                    </div>
+                    <p
+                        id="error-msg"
+                        class="admin-msg error"
+                        style="display: none;"
+                    >
+                    </p>
+                </form>
+            </div>
+
+            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">
+                Videos cargados ({listaVideos.length})
+            </h2>
+
+            {
+                listaVideos.length === 0 ? (
+                    <p style="color: var(--text-muted);">
+                        No hay videos cargados todavía.
+                    </p>
+                ) : (
+                    <div class="videos-grid">
+                        {listaVideos.map((video) => {
+                            const videoId = getYouTubeId(video.url);
+                            return (
+                                <div class="video-item">
+                                    <div class="video-preview">
+                                        {videoId ? (
+                                            <iframe
+                                                src={`https://www.youtube.com/embed/${videoId}`}
+                                                title={video.titulo}
+                                                frameborder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowfullscreen
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div class="video-invalid">
+                                                URL inválida
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div class="video-info">
+                                        <h3>{video.titulo}</h3>
+                                        {video.descripcion && (
+                                            <p>{video.descripcion}</p>
+                                        )}
+                                        <button
+                                            type="button"
+                                            class="admin-link-btn danger delete-video-btn"
+                                            data-id={video.id}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )
+            }
+        </div>
+    </section>
+
+    <script>
+        const form = document.getElementById("video-form");
+        const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+        const statusMsg = document.getElementById("status-msg");
+
+        if (form && errorMsg && submitBtn) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.textContent = "Agregando...";
+
+                const elTitulo = document.getElementById("titulo");
+                const elUrl = document.getElementById("url");
+                const elDescripcion = document.getElementById("descripcion");
+
+                const titulo =
+                    elTitulo && "value" in elTitulo ? elTitulo.value : "";
+                const url = elUrl && "value" in elUrl ? elUrl.value : "";
+                const descripcion =
+                    elDescripcion && "value" in elDescripcion
+                        ? elDescripcion.value
+                        : "";
+
+                try {
+                    const res = await fetch("/api/videos", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ titulo, url, descripcion }),
+                    });
+
+                    if (res.ok) {
+                        window.location.reload();
+                    } else {
+                        const data = await res.json();
+                        errorMsg.textContent = data.error || "Error al guardar";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    errorMsg.textContent = "Error de conexión";
+                    errorMsg.style.display = "block";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.textContent = "Agregar video";
+                }
+            });
+        }
+
+        document.querySelectorAll(".delete-video-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                if (!confirm("¿Eliminar este video?")) return;
+                const id = btn.getAttribute("data-id");
+                const res = await fetch(`/api/videos/${id}`, {
+                    method: "DELETE",
+                    credentials: "include",
+                });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error al eliminar");
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .admin-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .video-item {
+            background: var(--bg-soft);
+            border: 1px solid rgba(212, 168, 83, 0.12);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .video-item:hover {
+            border-color: rgba(212, 168, 83, 0.35);
+        }
+        .video-preview {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background: #000;
+        }
+        .video-preview iframe {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .video-invalid {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e74c3c;
+            font-size: 0.85rem;
+        }
+        .video-info {
+            padding: 1rem;
+        }
+        .video-info h3 {
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+        }
+        .video-info p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+        }
+    </style>
+</AdminLayout>

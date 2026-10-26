@@ -43,6 +43,14 @@ if (session) {
                         >Eventos</a
                     >
                     <a
+                        href="/admin/videos"
+                        class:list={[
+                            {
+                                active: currentPath.startsWith("/admin/videos"),
+                            },
+                        ]}>Videos</a
+                    >
+                    <a
                         href="/admin/galeria"
                         class:list={[
                             {
