@@ -14,9 +14,13 @@ const listaVideos = await db.select().from(videos).orderBy(desc(videos.id));
 const getYouTubeId = (url: string): string | null => {
     if (!url) return null;
     const match = url.match(
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+        /(?:youtube\.com\/watch\?v=|music\.youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
     );
     return match ? match[1] : null;
+};
+
+const esVideoSubido = (url: string): boolean => {
+    return url.includes(".public.blob.vercel-storage.com");
 };
 ---
 
@@ -45,10 +49,18 @@ const getYouTubeId = (url: string): string | null => {
                     <div class="videos-grid">
                         {listaVideos.map((video) => {
                             const videoId = getYouTubeId(video.url);
+                            const esSubido = esVideoSubido(video.url);
                             return (
                                 <div class="video-item">
                                     <div class="video-wrapper">
-                                        {videoId ? (
+                                        {esSubido ? (
+                                            <video controls>
+                                                <source
+                                                    src={video.url}
+                                                    type="video/mp4"
+                                                />
+                                            </video>
+                                        ) : videoId ? (
                                             <iframe
                                                 src={`https://www.youtube.com/embed/${videoId}`}
                                                 title={video.titulo}
@@ -128,7 +140,8 @@ const getYouTubeId = (url: string): string | null => {
             aspect-ratio: 16 / 9;
             background: #000;
         }
-        .video-wrapper iframe {
+        .video-wrapper iframe,
+        .video-wrapper video {
             width: 100%;
             height: 100%;
             display: block;

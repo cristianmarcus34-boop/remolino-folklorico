@@ -13,13 +13,16 @@ if (!session) {
 
 const listaVideos = await db.select().from(videos).orderBy(desc(videos.id));
 
-// Función para extraer el ID de YouTube de una URL
 const getYouTubeId = (url: string): string | null => {
     if (!url) return null;
     const match = url.match(
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+        /(?:youtube\.com\/watch\?v=|music\.youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
     );
     return match ? match[1] : null;
+};
+
+const esVideoSubido = (url: string): boolean => {
+    return url.includes(".public.blob.vercel-storage.com");
 };
 ---
 
@@ -30,7 +33,8 @@ const getYouTubeId = (url: string): string | null => {
                 <div>
                     <h1 class="admin-page-title">Videos</h1>
                     <p class="admin-page-subtitle">
-                        Agregá videos de YouTube para mostrarlos en el sitio.
+                        Subí videos desde tu dispositivo o agregá URLs de
+                        YouTube.
                     </p>
                 </div>
             </div>
@@ -48,25 +52,64 @@ const getYouTubeId = (url: string): string | null => {
                             placeholder="Ej: Presentación en el Teatro Provincial"
                         />
                     </div>
+
                     <div class="admin-field">
-                        <label class="admin-label" for="url"
-                            >URL de YouTube *</label
-                        >
-                        <input
-                            id="url"
-                            type="url"
-                            name="url"
-                            required
-                            class="admin-input"
-                            placeholder="https://www.youtube.com/watch?v=..."
-                        />
-                        <p
-                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
-                        >
-                            Pegá la URL del video de YouTube
-                            (youtube.com/watch?v=... o youtu.be/...).
-                        </p>
+                        <label class="admin-label">Origen del video</label>
+                        <div class="imagen-tabs">
+                            <button
+                                type="button"
+                                class="imagen-tab active"
+                                data-tab="archivo">Subir archivo</button
+                            >
+                            <button
+                                type="button"
+                                class="imagen-tab"
+                                data-tab="youtube">URL de YouTube</button
+                            >
+                        </div>
+
+                        <div class="imagen-panel active" data-panel="archivo">
+                            <input
+                                type="file"
+                                id="videoFile"
+                                accept="video/mp4,video/webm,video/ogg"
+                                class="admin-input"
+                                style="padding: 0.5rem;"
+                            />
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                            >
+                                MP4, WebM u OGG · máx 500 MB.
+                            </p>
+                            <div
+                                id="preview-container"
+                                style="display: none; margin-top: 0.8rem;"
+                            >
+                                <video
+                                    id="preview"
+                                    controls
+                                    style="max-width: 100%; max-height: 200px; border-radius: 3px;"
+                                ></video>
+                            </div>
+                        </div>
+
+                        <div class="imagen-panel" data-panel="youtube">
+                            <input
+                                id="url"
+                                type="url"
+                                name="url"
+                                class="admin-input"
+                                placeholder="https://www.youtube.com/watch?v=..."
+                            />
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                            >
+                                Pegá la URL del video de YouTube (watch, shorts,
+                                youtu.be o YouTube Music).
+                            </p>
+                        </div>
                     </div>
+
                     <div class="admin-field">
                         <label class="admin-label" for="descripcion"
                             >Descripción</label
@@ -79,6 +122,7 @@ const getYouTubeId = (url: string): string | null => {
                             placeholder="Breve descripción del video (opcional)"
                         ></textarea>
                     </div>
+
                     <div class="admin-actions">
                         <button type="submit" class="btn" id="submit-btn"
                             >Agregar video</button
@@ -110,10 +154,21 @@ const getYouTubeId = (url: string): string | null => {
                     <div class="videos-grid">
                         {listaVideos.map((video) => {
                             const videoId = getYouTubeId(video.url);
+                            const esSubido = esVideoSubido(video.url);
                             return (
                                 <div class="video-item">
                                     <div class="video-preview">
-                                        {videoId ? (
+                                        {esSubido ? (
+                                            <video
+                                                controls
+                                                style="width: 100%; height: 100%; display: block;"
+                                            >
+                                                <source
+                                                    src={video.url}
+                                                    type="video/mp4"
+                                                />
+                                            </video>
+                                        ) : videoId ? (
                                             <iframe
                                                 src={`https://www.youtube.com/embed/${videoId}`}
                                                 title={video.titulo}
@@ -150,81 +205,36 @@ const getYouTubeId = (url: string): string | null => {
         </div>
     </section>
 
-    <script>
-        const form = document.getElementById("video-form");
-        const errorMsg = document.getElementById("error-msg");
-        const submitBtn = document.getElementById("submit-btn");
-        const statusMsg = document.getElementById("status-msg");
-
-        if (form && errorMsg && submitBtn) {
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                errorMsg.style.display = "none";
-                submitBtn.setAttribute("disabled", "true");
-                submitBtn.textContent = "Agregando...";
-
-                const elTitulo = document.getElementById("titulo");
-                const elUrl = document.getElementById("url");
-                const elDescripcion = document.getElementById("descripcion");
-
-                const titulo =
-                    elTitulo && "value" in elTitulo ? elTitulo.value : "";
-                const url = elUrl && "value" in elUrl ? elUrl.value : "";
-                const descripcion =
-                    elDescripcion && "value" in elDescripcion
-                        ? elDescripcion.value
-                        : "";
-
-                try {
-                    const res = await fetch("/api/videos", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({ titulo, url, descripcion }),
-                    });
-
-                    if (res.ok) {
-                        window.location.reload();
-                    } else {
-                        const data = await res.json();
-                        errorMsg.textContent = data.error || "Error al guardar";
-                        errorMsg.style.display = "block";
-                    }
-                } catch (err) {
-                    errorMsg.textContent = "Error de conexión";
-                    errorMsg.style.display = "block";
-                } finally {
-                    submitBtn.removeAttribute("disabled");
-                    submitBtn.textContent = "Agregar video";
-                }
-            });
-        }
-
-        document.querySelectorAll(".delete-video-btn").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-                if (!confirm("¿Eliminar este video?")) return;
-                const id = btn.getAttribute("data-id");
-                const res = await fetch(`/api/videos/${id}`, {
-                    method: "DELETE",
-                    credentials: "include",
-                });
-                if (res.ok) {
-                    window.location.reload();
-                } else {
-                    alert("Error al eliminar");
-                }
-            });
-        });
-    </script>
-
     <style>
-        .admin-page-header {
+        .imagen-tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .imagen-tab {
+            background: none;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            color: var(--text-muted);
+            padding: 0.4rem 0.9rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .imagen-tab:hover {
+            border-color: var(--accent-soft);
+            color: var(--accent-soft);
+        }
+        .imagen-tab.active {
+            background: rgba(212, 168, 83, 0.15);
+            border-color: var(--accent-soft);
+            color: var(--accent-soft);
+        }
+        .imagen-panel {
+            display: none;
+        }
+        .imagen-panel.active {
+            display: block;
         }
         .videos-grid {
             display: grid;
@@ -246,7 +256,8 @@ const getYouTubeId = (url: string): string | null => {
             aspect-ratio: 16 / 9;
             background: #000;
         }
-        .video-preview iframe {
+        .video-preview iframe,
+        .video-preview video {
             width: 100%;
             height: 100%;
             display: block;
@@ -273,4 +284,164 @@ const getYouTubeId = (url: string): string | null => {
             margin-bottom: 0.8rem;
         }
     </style>
+
+    <script>
+        // @ts-nocheck
+        import { upload } from "@vercel/blob/client";
+
+        const form = document.getElementById("video-form");
+        const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+        const videoFile = document.getElementById("videoFile");
+        const preview = document.getElementById("preview");
+        const previewContainer = document.getElementById("preview-container");
+        const urlInput = document.getElementById("url");
+
+        // Tabs
+        const tabs = document.querySelectorAll(".imagen-tab");
+        const panels = document.querySelectorAll(".imagen-panel");
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const target = tab.getAttribute("data-tab");
+                tabs.forEach((t) => t.classList.remove("active"));
+                tab.classList.add("active");
+                panels.forEach((p) => {
+                    p.classList.toggle(
+                        "active",
+                        p.getAttribute("data-panel") === target,
+                    );
+                });
+            });
+        });
+
+        // Preview de video
+        if (videoFile && "files" in videoFile) {
+            videoFile.addEventListener("change", () => {
+                const files = videoFile.files;
+                if (
+                    !files ||
+                    typeof files !== "object" ||
+                    !("length" in files)
+                ) {
+                    if (previewContainer && "style" in previewContainer) {
+                        previewContainer.style.display = "none";
+                    }
+                    return;
+                }
+                const filesArray = Array.from(files);
+                const file = filesArray.length > 0 ? filesArray[0] : null;
+                if (!file) {
+                    if (previewContainer && "style" in previewContainer) {
+                        previewContainer.style.display = "none";
+                    }
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (preview && "src" in preview) {
+                        preview.src = String(e.target ? e.target.result : "");
+                    }
+                    if (previewContainer && "style" in previewContainer) {
+                        previewContainer.style.display = "block";
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (form && errorMsg && submitBtn) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.textContent = "Guardando...";
+
+                const elTitulo = document.getElementById("titulo");
+                const elDescripcion = document.getElementById("descripcion");
+                const titulo =
+                    elTitulo && "value" in elTitulo ? elTitulo.value : "";
+                const descripcion =
+                    elDescripcion && "value" in elDescripcion
+                        ? elDescripcion.value
+                        : "";
+
+                const panelActivo = document.querySelector(
+                    ".imagen-panel.active",
+                );
+                const archivoActivo =
+                    panelActivo?.getAttribute("data-panel") === "archivo";
+                let url = urlInput && "value" in urlInput ? urlInput.value : "";
+
+                try {
+                    if (
+                        archivoActivo &&
+                        videoFile &&
+                        "files" in videoFile &&
+                        videoFile.files &&
+                        typeof videoFile.files === "object" &&
+                        "length" in videoFile.files &&
+                        videoFile.files.length > 0
+                    ) {
+                        const filesArray = Array.from(videoFile.files);
+                        const file = filesArray[0];
+                        submitBtn.textContent = "Subiendo video...";
+
+                        const blob = await upload(file.name, file, {
+                            access: "public",
+                            handleUploadUrl: "/api/videos/upload-token",
+                        });
+
+                        url = blob.url;
+                    }
+
+                    if (!url) {
+                        errorMsg.textContent =
+                            "Seleccioná un archivo o pegá una URL de YouTube.";
+                        errorMsg.style.display = "block";
+                        return;
+                    }
+
+                    const res = await fetch("/api/videos", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ titulo, url, descripcion }),
+                    });
+
+                    if (res.ok) {
+                        window.location.reload();
+                    } else {
+                        const data = await res.json();
+                        errorMsg.textContent = data.error || "Error al guardar";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
+                    errorMsg.style.display = "block";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.textContent = "Agregar video";
+                }
+            });
+        }
+
+        document.querySelectorAll(".delete-video-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                if (!confirm("¿Eliminar este video?")) return;
+                const id = btn.getAttribute("data-id");
+                const res = await fetch(`/api/videos/${id}`, {
+                    method: "DELETE",
+                    credentials: "include",
+                });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error al eliminar");
+                }
+            });
+        });
+    </script>
 </AdminLayout>
