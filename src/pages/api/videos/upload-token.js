@@ -1,10 +1,10 @@
 export const prerender = false;
 
 import { handleUpload } from '@vercel/blob/client';
-import { auth } from '../../../lib/auth.js';
+import { auth } from '../../lib/auth.js';
 
 export const POST = async ({ request }) => {
-    // 1. Verificación crítica: ¿el token de Blob existe en el entorno?
+    // Verificación del token de Blob
     if (!import.meta.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_READ_WRITE_TOKEN) {
         console.error('[upload-token] ERROR: BLOB_READ_WRITE_TOKEN no está definido en el entorno.');
         return new Response(
@@ -13,7 +13,7 @@ export const POST = async ({ request }) => {
         );
     }
 
-    // 2. Verificación de sesión
+    // Verificación de sesión
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session) {
         console.warn('[upload-token] Intento de subida sin sesión válida.');
@@ -23,7 +23,7 @@ export const POST = async ({ request }) => {
         );
     }
 
-    // 3. Parseo del body (con manejo de errores)
+    // Parseo del body
     let body;
     try {
         body = await request.json();
@@ -35,7 +35,7 @@ export const POST = async ({ request }) => {
         );
     }
 
-    // 4. Generación del token con try/catch detallado
+    // Generación del token
     try {
         const jsonResponse = await handleUpload({
             body,
@@ -43,15 +43,14 @@ export const POST = async ({ request }) => {
             token: import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN,
             onBeforeGenerateToken: async (pathname) => {
                 return {
-                    allowedContentTypes: ['video/mp4', 'video/webm', 'video/ogg'],
-                    maximumSizeInBytes: 500 * 1024 * 1024,
+                    allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+                    maximumSizeInBytes: 10 * 1024 * 1024, // 10 MB
                     validUntil: Date.now() + 5 * 60 * 1000,
                 };
             },
             onUploadCompleted: async ({ blob }) => {
-                console.log('[upload-token] Subida completada:', blob.url);
+                console.log('[upload-token] Imagen subida:', blob.url);
             },
-
         });
 
         return new Response(JSON.stringify(jsonResponse), {
@@ -59,7 +58,6 @@ export const POST = async ({ request }) => {
             headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
-        // Loguear el error completo para diagnóstico
         console.error('[upload-token] Error en handleUpload:', error);
         return new Response(
             JSON.stringify({ error: error.message || 'Error interno al generar el token' }),

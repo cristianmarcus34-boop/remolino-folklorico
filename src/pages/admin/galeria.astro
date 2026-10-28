@@ -53,7 +53,7 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                             <p
                                 style="font-size: 0.8rem; color: var(--text-muted);"
                             >
-                                JPG, PNG o WebP · máx 4.5 MB
+                                JPG, PNG o WebP · máx 10 MB
                             </p>
                         </div>
                         <img
@@ -142,7 +142,7 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                                         <select
                                             class="seccion-select"
                                             data-id={img.id}
-                                            style="width: 100%; padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid rgba(212,168,83,0.2); color: var(--text); border-radius: 2px; font-size: 0.75rem;"
+                                            style="width: 100%; padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid rgba(255,202,40,0.2); color: var(--text); border-radius: 2px; font-size: 0.75rem;"
                                         >
                                             <option
                                                 value=""
@@ -274,6 +274,8 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
 
     <script>
         // @ts-nocheck
+        import { upload } from "@vercel/blob/client";
+
         const form = document.getElementById("upload-form");
         const fileInput = document.getElementById("file-input");
         const dropzone = document.getElementById("dropzone");
@@ -351,24 +353,15 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                 }
 
                 try {
-                    const uploadData = new FormData();
-                    uploadData.append("file", file);
-
-                    const uploadRes = await fetch("/api/upload", {
-                        method: "POST",
-                        body: uploadData,
-                        credentials: "include",
+                    // Subida directa a Vercel Blob
+                    const blob = await upload(file.name, file, {
+                        access: "public",
+                        handleUploadUrl: "/api/upload-token",
                     });
 
-                    if (!uploadRes.ok) {
-                        const data = await uploadRes.json();
-                        throw new Error(
-                            data.error || "Error al subir la imagen",
-                        );
-                    }
+                    const url = blob.url;
 
-                    const { url } = await uploadRes.json();
-
+                    // Guardar en la base de datos
                     const saveRes = await fetch("/api/galeria", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
