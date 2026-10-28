@@ -1,8 +1,8 @@
 export const prerender = false;
 
-import { db } from '../../../db/index.js';
-import { eventos } from '../../../db/schema.js';
-import { auth } from '../../../lib/auth.js';
+import { db } from '@/db/index.js';
+import { eventos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
 import { eq } from 'drizzle-orm';
 
 export const PUT = async ({ request, params }) => {

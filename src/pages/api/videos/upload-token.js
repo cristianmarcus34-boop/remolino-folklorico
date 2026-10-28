@@ -1,41 +1,37 @@
 export const prerender = false;
 
 import { handleUpload } from '@vercel/blob/client';
-import { auth } from '../../lib/auth.js';
+import { auth } from '@/lib/auth.js';
 
 export const POST = async ({ request }) => {
-    // Verificación del token de Blob
     if (!import.meta.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_READ_WRITE_TOKEN) {
-        console.error('[upload-token] ERROR: BLOB_READ_WRITE_TOKEN no está definido en el entorno.');
+        console.error('[videos/upload-token] ERROR: BLOB_READ_WRITE_TOKEN no está definido en el entorno.');
         return new Response(
             JSON.stringify({ error: 'Configuración del servidor incompleta (falta token de Blob)' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }
 
-    // Verificación de sesión
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session) {
-        console.warn('[upload-token] Intento de subida sin sesión válida.');
+        console.warn('[videos/upload-token] Intento de subida sin sesión válida.');
         return new Response(
             JSON.stringify({ error: 'No autorizado' }),
             { status: 401, headers: { 'Content-Type': 'application/json' } }
         );
     }
 
-    // Parseo del body
     let body;
     try {
         body = await request.json();
     } catch (parseError) {
-        console.error('[upload-token] Error al parsear el body de la petición:', parseError);
+        console.error('[videos/upload-token] Error al parsear el body de la petición:', parseError);
         return new Response(
             JSON.stringify({ error: 'Petición inválida' }),
             { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
     }
 
-    // Generación del token
     try {
         const jsonResponse = await handleUpload({
             body,
@@ -43,13 +39,13 @@ export const POST = async ({ request }) => {
             token: import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN,
             onBeforeGenerateToken: async (pathname) => {
                 return {
-                    allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-                    maximumSizeInBytes: 10 * 1024 * 1024, // 10 MB
+                    allowedContentTypes: ['video/mp4', 'video/webm', 'video/ogg'],
+                    maximumSizeInBytes: 500 * 1024 * 1024,
                     validUntil: Date.now() + 5 * 60 * 1000,
                 };
             },
             onUploadCompleted: async ({ blob }) => {
-                console.log('[upload-token] Imagen subida:', blob.url);
+                console.log('[videos/upload-token] Video subido:', blob.url);
             },
         });
 
@@ -58,7 +54,7 @@ export const POST = async ({ request }) => {
             headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
-        console.error('[upload-token] Error en handleUpload:', error);
+        console.error('[videos/upload-token] Error en handleUpload:', error);
         return new Response(
             JSON.stringify({ error: error.message || 'Error interno al generar el token' }),
             { status: 400, headers: { 'Content-Type': 'application/json' } }

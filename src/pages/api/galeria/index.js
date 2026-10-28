@@ -1,8 +1,8 @@
 export const prerender = false;
 
-import { db } from '../../../db/index.js';
-import { galeria } from '../../../db/schema.js';
-import { auth } from '../../../lib/auth.js';
+import { db } from '@/db/index.js';
+import { galeria } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
 
 export const POST = async ({ request }) => {
     const session = await auth.api.getSession({ headers: request.headers });

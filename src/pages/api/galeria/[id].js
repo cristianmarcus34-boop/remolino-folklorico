@@ -1,8 +1,8 @@
 export const prerender = false;
 
-import { db } from '../../../db/index.js';
-import { galeria } from '../../../db/schema.js';
-import { auth } from '../../../lib/auth.js';
+import { db } from '@/db/index.js';
+import { galeria } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
 import { del } from '@vercel/blob';
 import { eq } from 'drizzle-orm';
 
