@@ -143,10 +143,12 @@ const {
         position: sticky;
         top: 0;
         z-index: 100;
-        background: rgba(26, 20, 16, 0.75);
+        /* Negro puro con transparencia para el blur */
+        background: rgba(0, 0, 0, 0.75);
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
-        border-bottom: 1px solid rgba(212, 168, 83, 0.08);
+        /* Borde inferior con un toque fucsia muy sutil */
+        border-bottom: 1px solid rgba(233, 30, 99, 0.15);
       }
       .header-inner {
         display: flex;
@@ -176,7 +178,10 @@ const {
         height: 32px;
         border-radius: 50%;
         flex-shrink: 0;
-        box-shadow: 0 4px 16px rgba(199, 91, 57, 0.35);
+        /* Resplandor fucsia/dorado en el logo */
+        box-shadow:
+          0 0 15px rgba(233, 30, 99, 0.4),
+          0 0 30px rgba(255, 202, 40, 0.2);
         object-fit: cover;
       }
       .logo-text {
@@ -206,17 +211,24 @@ const {
       nav a:hover {
         color: var(--accent-soft);
       }
+      /* Línea de hover con degradado del logo */
       nav a::after {
         content: "";
         position: absolute;
         left: 0;
         bottom: -6px;
         width: 100%;
-        height: 1px;
-        background: var(--accent-soft);
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          var(--accent),
+          var(--accent-soft),
+          var(--accent-alt)
+        );
         transform: scaleX(0);
         transform-origin: right;
         transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        border-radius: 2px;
       }
       nav a:hover::after {
         transform: scaleX(1);
@@ -235,7 +247,7 @@ const {
       }
       nav a.admin-link:hover {
         opacity: 1;
-        color: var(--accent-soft);
+        color: var(--accent-alt);
       }
 
       /* ============================
@@ -243,8 +255,8 @@ const {
          ============================ */
       .site-footer {
         position: relative;
-        background: var(--bg-soft);
-        border-top: 1px solid rgba(212, 168, 83, 0.1);
+        background: var(--bg-soft); /* Negro un poco más claro */
+        border-top: 1px solid rgba(255, 202, 40, 0.1);
         padding: 4rem 0 2rem;
         overflow: hidden;
       }
@@ -255,9 +267,10 @@ const {
         transform: translateX(-50%);
         width: 600px;
         height: 400px;
+        /* Resplandor con el fucsia del logo */
         background: radial-gradient(
           ellipse,
-          rgba(199, 91, 57, 0.12),
+          rgba(233, 30, 99, 0.12),
           transparent 70%
         );
         filter: blur(60px);
@@ -301,8 +314,8 @@ const {
         flex-wrap: wrap;
         gap: 2rem;
         padding: 2rem 0;
-        border-top: 1px solid rgba(212, 168, 83, 0.08);
-        border-bottom: 1px solid rgba(212, 168, 83, 0.08);
+        border-top: 1px solid rgba(233, 30, 99, 0.1);
+        border-bottom: 1px solid rgba(233, 30, 99, 0.1);
       }
       .footer-nav a {
         color: var(--text-muted);
@@ -334,7 +347,7 @@ const {
         opacity: 0.6;
       }
       .footer-admin:hover {
-        color: var(--accent-soft);
+        color: var(--accent-alt);
         opacity: 1;
       }
 
@@ -351,10 +364,9 @@ const {
         .logo {
           font-size: 1.05rem;
         }
-        .logo-mark {
+        .logo-mark-img {
           width: 28px;
           height: 28px;
-          font-size: 0.85rem;
         }
         .logo-sub {
           font-size: 0.7rem;

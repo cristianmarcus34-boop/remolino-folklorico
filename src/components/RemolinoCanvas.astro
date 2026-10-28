@@ -29,9 +29,10 @@
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.appendChild(renderer.domElement);
 
-  const colors = [0xc75b39, 0xd4a853, 0xf5f0e8, 0xa84a2d];
+  // Nueva paleta del logo: Fucsia, Dorado, Cian, Blanco
+  const colors = [0xe91e63, 0xffca28, 0x00bcd4, 0xf5f0e8];
 
-  const particleCount = 1600;
+  const particleCount = 1800; // Más partículas para más densidad
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
   const colorsArray = new Float32Array(particleCount * 3);
@@ -56,10 +57,10 @@
   geometry.setAttribute("color", new THREE.BufferAttribute(colorsArray, 3));
 
   const material = new THREE.PointsMaterial({
-    size: 0.03,
+    size: 0.06, // Partículas más grandes para que brillen
     vertexColors: true,
     transparent: true,
-    opacity: 0.9,
+    opacity: 1,
     sizeAttenuation: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
@@ -133,7 +134,37 @@
     min-height: 400px;
     pointer-events: none;
     overflow: hidden;
+    position: relative;
   }
+
+  /* Halo de luz pulsante detrás del remolino */
+  .remolino-container::before {
+    content: "";
+    position: absolute;
+    inset: 10%;
+    background: radial-gradient(
+      circle,
+      rgba(233, 30, 99, 0.2) 0%,
+      rgba(0, 188, 212, 0.1) 50%,
+      transparent 70%
+    );
+    filter: blur(40px);
+    border-radius: 50%;
+    z-index: -1;
+    animation: pulseGlow 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulseGlow {
+    from {
+      transform: scale(0.9);
+      opacity: 0.5;
+    }
+    to {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+
   .remolino-container canvas {
     display: block;
     width: 100% !important;
@@ -149,6 +180,12 @@
   @media (max-width: 600px) {
     .remolino-container {
       min-height: 260px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .remolino-container::before {
+      animation: none;
     }
   }
 </style>

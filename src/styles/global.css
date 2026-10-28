@@ -1,11 +1,19 @@
 /* src/styles/global.css */
 :root {
-    --bg: #1a1410;
-    --bg-soft: #241c16;
-    --accent: #c75b39;
-    --accent-soft: #d4a853;
-    --text: #f5f0e8;
-    --text-muted: #a89a8a;
+    --bg: #000000;
+    /* Negro puro solicitado */
+    --bg-soft: #0a0a0a;
+    /* Negro un poco más claro para tarjetas */
+    --accent: #e91e63;
+    /* Fucsia vibrante del vestido/remolino */
+    --accent-soft: #ffca28;
+    /* Dorado/Amarillo de las letras */
+    --accent-alt: #00bcd4;
+    /* Cian del remolino para contrastes */
+    --text: #ffffff;
+    /* Blanco puro para títulos */
+    --text-muted: #a3a3a3;
+    /* Gris claro para textos secundarios */
     --font-serif: 'Fraunces', 'Georgia', serif;
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
@@ -32,14 +40,14 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* Grain overlay global */
+/* Grain overlay global (un poco más sutil en negro puro) */
 body::before {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 9999;
     pointer-events: none;
-    opacity: 0.05;
+    opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -84,7 +92,7 @@ img {
 
 ::selection {
     background: var(--accent);
-    color: var(--text);
+    color: #ffffff;
 }
 
 .container {
@@ -193,8 +201,8 @@ nav a:hover::after {
 .admin-textarea {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: var(--bg);
-    border: 1px solid rgba(212, 168, 83, 0.2);
+    background: var(--bg-soft);
+    border: 1px solid rgba(255, 202, 40, 0.2);
     color: var(--text);
     border-radius: 3px;
     font-family: var(--font-sans);
@@ -207,13 +215,13 @@ nav a:hover::after {
 .admin-textarea:focus {
     outline: none;
     border-color: var(--accent-soft);
-    background: var(--bg-soft);
-    box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
+    background: #000000;
+    box-shadow: 0 0 0 3px rgba(255, 202, 40, 0.15);
 }
 
 .admin-input::placeholder {
     color: var(--text-muted);
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 .admin-label {
@@ -231,14 +239,14 @@ nav a:hover::after {
 
 .admin-card {
     background: var(--bg-soft);
-    border: 1px solid rgba(212, 168, 83, 0.12);
-    border-radius: 4px;
+    border: 1px solid rgba(255, 202, 40, 0.1);
+    border-radius: 6px;
     padding: 1.5rem;
     transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .admin-card:hover {
-    border-color: rgba(212, 168, 83, 0.3);
+    border-color: rgba(255, 202, 40, 0.3);
 }
 
 .admin-actions {
@@ -261,16 +269,16 @@ nav a:hover::after {
 
 .admin-link-btn:hover {
     color: var(--accent-soft);
-    background: rgba(212, 168, 83, 0.08);
+    background: rgba(255, 202, 40, 0.08);
 }
 
 .admin-link-btn.danger {
-    color: #e74c3c;
+    color: #ff5252;
 }
 
 .admin-link-btn.danger:hover {
-    color: #ff6b5b;
-    background: rgba(231, 76, 60, 0.1);
+    color: #ff8a80;
+    background: rgba(255, 82, 82, 0.1);
 }
 
 .admin-msg {
@@ -281,9 +289,9 @@ nav a:hover::after {
 }
 
 .admin-msg.error {
-    background: rgba(231, 76, 60, 0.12);
-    border-left: 3px solid #e74c3c;
-    color: #ff8a7a;
+    background: rgba(255, 82, 82, 0.12);
+    border-left: 3px solid #ff5252;
+    color: #ff8a80;
 }
 
 .admin-msg.success {
@@ -304,7 +312,7 @@ nav a:hover::after {
     font-weight: 300;
 }
 
-/* Accesibilidad: respetar prefers-reduced-motion */
+/* Accesibilidad */
 @media (prefers-reduced-motion: reduce) {
 
     .reveal,
@@ -321,10 +329,7 @@ nav a:hover::after {
     }
 }
 
-/* ============================
-   Responsive global
-   ============================ */
-
+/* Responsive global */
 @media (max-width: 900px) {
     .container {
         padding: 0 1.8rem;
