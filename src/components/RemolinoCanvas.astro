@@ -22,7 +22,7 @@
     0.1,
     100,
   );
-  camera.position.z = 9.2; // Un poco más lejos para que entre el remolino más largo
+  camera.position.z = 10.0;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(container.clientWidth, container.clientHeight);
@@ -31,7 +31,7 @@
 
   const colors = [0xe91e63, 0xffca28, 0x00bcd4, 0x8bc34a];
 
-  const particleCount = 3000;
+  const particleCount = 9000;
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
   const colorsArray = new Float32Array(particleCount * 3);
@@ -43,17 +43,16 @@
     const colorIndex = i % colors.length;
     const radiusOffset = colorIndex * 0.25;
 
-    // EFECTO EMBUDO:
-    // Multiplicamos la apertura (2.2) por t (que va de 0 a 1).
-    // Abajo (t=0) el radio es 0.1 (finito). Arriba (t=1) el radio es 2.3 (abierto).
     const radius = 0.1 + t * 2.2 + radiusOffset;
+    const y = (t - 0.5) * 7.2;
 
-    // MÁS LARGO: 10% más (antes 5.5, ahora 6.0)
-    const y = (t - 0.5) * 6.0;
+    const noiseX = (Math.random() - 0.5) * 0.15;
+    const noiseZ = (Math.random() - 0.5) * 0.15;
+    const noiseY = (Math.random() - 0.5) * 0.15;
 
-    positions[i * 3] = Math.cos(angle) * radius;
-    positions[i * 3 + 1] = y;
-    positions[i * 3 + 2] = Math.sin(angle) * radius;
+    positions[i * 3] = Math.cos(angle) * radius + noiseX;
+    positions[i * 3 + 1] = y + noiseY;
+    positions[i * 3 + 2] = Math.sin(angle) * radius + noiseZ;
 
     const color = new THREE.Color(colors[colorIndex]);
     colorsArray[i * 3] = color.r;
@@ -65,16 +64,20 @@
   geometry.setAttribute("color", new THREE.BufferAttribute(colorsArray, 3));
 
   const material = new THREE.PointsMaterial({
-    size: 0.07,
+    size: 0.025,
     vertexColors: true,
     transparent: true,
-    opacity: 1,
+    opacity: 0.6,
     sizeAttenuation: true,
     depthWrite: false,
-    blending: THREE.NormalBlending,
+    blending: THREE.AdditiveBlending,
   });
 
   const particles = new THREE.Points(geometry, material);
+
+  // BAJAR TODO EL REMOLINO UN 10%
+  particles.position.y = -0.8;
+
   scene.add(particles);
 
   const mouse = { x: 0, y: 0 };
@@ -109,12 +112,14 @@
     const elapsed = timer.getElapsed();
 
     if (!reduceMotion) {
-      particles.rotation.y = elapsed * 0.2;
-      particles.rotation.x = Math.sin(elapsed * 0.3) * 0.15;
+      particles.rotation.y = elapsed * 0.15;
+      particles.rotation.x = Math.sin(elapsed * 0.2) * 0.1;
+      particles.rotation.z = Math.cos(elapsed * 0.1) * 0.05;
     }
 
+    // La reacción al mouse se suma a la posición base (-0.8)
     const targetX = mouse.x * maxShiftX;
-    const targetY = mouse.y * maxShiftY;
+    const targetY = mouse.y * maxShiftY - 0.8;
 
     particles.position.x += (targetX - particles.position.x) * 0.05;
     particles.position.y += (targetY - particles.position.y) * 0.05;
@@ -143,6 +148,7 @@
     pointer-events: none;
     overflow: hidden;
     position: relative;
+    z-index: 1; /* Asegura que el canvas esté sobre la sombra */
   }
 
   .remolino-container::before {
@@ -151,8 +157,8 @@
     inset: 10%;
     background: radial-gradient(
       circle,
-      rgba(233, 30, 99, 0.25) 0%,
-      rgba(255, 202, 40, 0.15) 40%,
+      rgba(233, 30, 99, 0.2) 0%,
+      rgba(255, 202, 40, 0.1) 40%,
       transparent 70%
     );
     filter: blur(60px);
@@ -164,11 +170,11 @@
   @keyframes pulseGlow {
     from {
       transform: scale(0.9);
-      opacity: 0.6;
+      opacity: 0.5;
     }
     to {
       transform: scale(1.1);
-      opacity: 1;
+      opacity: 0.9;
     }
   }
 

@@ -55,7 +55,8 @@ const fotoInicio =
         </div>
       </div>
       <div class="hero-visual hero-anim hero-anim-3">
-        <div class="hero-visual-ring"></div>
+        <!-- Sombra 3D debajo del remolino -->
+        <div class="hero-visual-shadow"></div>
         <RemolinoCanvas />
       </div>
     </div>
@@ -141,9 +142,16 @@ const fotoInicio =
       min-height: 100vh;
       display: flex;
       align-items: center;
-      padding: 7rem 0 9rem;
+      /* Menos espacio arriba para que no esté tan separado de la navbar */
+      padding: 2rem 0 8rem;
       overflow: hidden;
       background: var(--bg); /* Negro puro */
+      /* Grilla sutil de fondo */
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-position: center center;
     }
     .hero-glow {
       position: absolute;
@@ -157,7 +165,6 @@ const fotoInicio =
       height: 600px;
       top: -200px;
       left: -150px;
-      /* Fucsia/Magenta vibrante */
       background: radial-gradient(
         circle,
         rgba(233, 30, 99, 0.6),
@@ -170,7 +177,6 @@ const fotoInicio =
       height: 500px;
       bottom: -150px;
       right: -100px;
-      /* Cian vibrante */
       background: radial-gradient(
         circle,
         rgba(0, 188, 212, 0.4),
@@ -217,26 +223,29 @@ const fotoInicio =
       width: 100%;
       aspect-ratio: 1 / 1;
       max-height: 620px;
+      /* Resplandor sutil general */
+      filter: drop-shadow(0 0 40px rgba(233, 30, 99, 0.2));
     }
-    .hero-visual-ring {
+
+    /* Sombra elíptica 3D debajo del remolino */
+    .hero-visual-shadow {
       position: absolute;
-      inset: 5%;
-      border: 1px solid rgba(255, 202, 40, 0.2);
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 20px;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(233, 30, 99, 0.4) 0%,
+        rgba(0, 0, 0, 0) 70%
+      );
+      filter: blur(15px);
       border-radius: 50%;
+      z-index: 0;
       pointer-events: none;
-      animation: ringPulse 4s ease-in-out infinite;
     }
-    @keyframes ringPulse {
-      0%,
-      100% {
-        transform: scale(1);
-        opacity: 0.3;
-      }
-      50% {
-        transform: scale(1.03);
-        opacity: 0.6;
-      }
-    }
+
     .hero-kicker {
       display: inline-flex;
       align-items: center;
@@ -314,7 +323,6 @@ const fotoInicio =
       cursor: pointer;
     }
     .btn-primary {
-      /* Degradado con colores del logo */
       background: linear-gradient(
         135deg,
         var(--accent) 0%,
@@ -465,7 +473,7 @@ const fotoInicio =
        CTA
        ============================ */
     .cta {
-      background: var(--bg-soft); /* Un negro apenas más claro para separar */
+      background: var(--bg-soft);
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -555,7 +563,7 @@ const fotoInicio =
     @media (max-width: 600px) {
       .hero {
         min-height: auto;
-        padding: 4rem 0 5rem;
+        padding: 1rem 0 5rem;
       }
       .hero-kicker {
         font-size: 0.6rem;
@@ -604,7 +612,6 @@ const fotoInicio =
     @media (prefers-reduced-motion: reduce) {
       .hero-glow-1,
       .hero-glow-2,
-      .hero-visual-ring,
       .hero-scroll-line {
         animation: none !important;
       }
