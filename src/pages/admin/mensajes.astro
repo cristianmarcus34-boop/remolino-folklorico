@@ -67,6 +67,11 @@ const noLeidos = lista.filter((m) => !m.leido).length;
                                                     Nuevo
                                                 </span>
                                             )}
+                                            {m.leido && (
+                                                <span class="badge-leido">
+                                                    Leído
+                                                </span>
+                                            )}
                                         </div>
                                         <div class="mensaje-meta">
                                             <span>{m.email}</span>
@@ -89,13 +94,23 @@ const noLeidos = lista.filter((m) => !m.leido).length;
                                         </div>
                                     </div>
                                     <div class="mensaje-actions">
-                                        {!m.leido && (
+                                        {!m.leido ? (
                                             <button
                                                 type="button"
                                                 class="admin-link-btn marcar-leido-btn"
                                                 data-id={m.id}
+                                                data-leido="true"
                                             >
                                                 Marcar como leído
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                class="admin-link-btn marcar-no-leido-btn"
+                                                data-id={m.id}
+                                                data-leido="false"
+                                            >
+                                                Marcar como no leído
                                             </button>
                                         )}
                                         <button
@@ -161,30 +176,47 @@ const noLeidos = lista.filter((m) => !m.leido).length;
     <script>
         // @ts-nocheck
         // ==================
-        // MARCAR COMO LEÍDO
+        // MARCAR COMO LEÍDO / NO LEÍDO (toggle)
         // ==================
+        async function toggleLeido(id, nuevoEstado) {
+            try {
+                const res = await fetch(`/api/mensajes/${id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ leido: nuevoEstado }),
+                });
+                if (res.ok) {
+                    const mensaje = nuevoEstado
+                        ? "Mensaje marcado como leído"
+                        : "Mensaje marcado como no leído";
+                    window.showToast(mensaje, "success");
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    window.showToast(
+                        data.error || "Error al actualizar el mensaje",
+                        "error",
+                    );
+                }
+            } catch (err) {
+                window.showToast("Error de conexión", "error");
+            }
+        }
+
         document.querySelectorAll(".marcar-leido-btn").forEach((btn) => {
             btn.addEventListener("click", async () => {
                 const id = btn.getAttribute("data-id");
-                try {
-                    const res = await fetch(`/api/mensajes/${id}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({ leido: true }),
-                    });
-                    if (res.ok) {
-                        window.showToast(
-                            "Mensaje marcado como leído",
-                            "success",
-                        );
-                        setTimeout(() => window.location.reload(), 800);
-                    } else {
-                        window.showToast("Error al marcar como leído", "error");
-                    }
-                } catch (err) {
-                    window.showToast("Error de conexión", "error");
-                }
+                btn.setAttribute("disabled", "true");
+                await toggleLeido(id, true);
+            });
+        });
+
+        document.querySelectorAll(".marcar-no-leido-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const id = btn.getAttribute("data-id");
+                btn.setAttribute("disabled", "true");
+                await toggleLeido(id, false);
             });
         });
 
@@ -202,6 +234,7 @@ const noLeidos = lista.filter((m) => !m.leido).length;
                 if (!ok) return;
 
                 const id = btn.getAttribute("data-id");
+                btn.setAttribute("disabled", "true");
                 try {
                     const res = await fetch(`/api/mensajes/${id}`, {
                         method: "DELETE",
@@ -211,10 +244,16 @@ const noLeidos = lista.filter((m) => !m.leido).length;
                         window.showToast("Mensaje eliminado", "success");
                         setTimeout(() => window.location.reload(), 800);
                     } else {
-                        window.showToast("Error al eliminar", "error");
+                        const data = await res.json().catch(() => ({}));
+                        window.showToast(
+                            data.error || "Error al eliminar",
+                            "error",
+                        );
+                        btn.removeAttribute("disabled");
                     }
                 } catch (err) {
                     window.showToast("Error de conexión", "error");
+                    btn.removeAttribute("disabled");
                 }
             });
         });
@@ -278,6 +317,7 @@ const noLeidos = lista.filter((m) => !m.leido).length;
             align-items: center;
             gap: 0.7rem;
             margin-bottom: 0.3rem;
+            flex-wrap: wrap;
         }
         .mensaje-nombre {
             font-size: 1.1rem;
@@ -293,6 +333,16 @@ const noLeidos = lista.filter((m) => !m.leido).length;
             background: var(--accent);
             color: var(--text);
         }
+        .badge-leido {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
         .mensaje-meta {
             display: flex;
             flex-wrap: wrap;
@@ -307,6 +357,10 @@ const noLeidos = lista.filter((m) => !m.leido).length;
             display: flex;
             gap: 0.3rem;
             flex-shrink: 0;
+        }
+        .mensaje-actions .admin-link-btn:disabled {
+            opacity: 0.5;
+            cursor: wait;
         }
         .mensaje-detalles {
             display: flex;
