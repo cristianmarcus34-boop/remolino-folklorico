@@ -103,7 +103,7 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                             id="imagen-actual"
                             src={evento.imagenUrl || ""}
                             alt={evento.titulo}
-                            style="max-width: 200px; max-height: 150px; border-radius: 3px; border: 1px solid rgba(212,168,83,0.2);"
+                            style="max-width: 200px; max-height: 150px; border-radius: 4px; border: 1px solid rgba(255, 202, 40, 0.3);"
                         />
                     </div>
 
@@ -165,7 +165,7 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                             >
                                 <img
                                     id="preview"
-                                    style="max-width: 100%; max-height: 200px; border-radius: 3px;"
+                                    style="max-width: 100%; max-height: 200px; border-radius: 4px; border: 1px solid rgba(255, 202, 40, 0.3);"
                                 />
                             </div>
                         </div>
@@ -196,10 +196,10 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
         }
         .imagen-tab {
             background: none;
-            border: 1px solid rgba(212, 168, 83, 0.2);
+            border: 1px solid rgba(233, 30, 99, 0.3);
             color: var(--text-muted);
             padding: 0.4rem 0.9rem;
-            border-radius: 2px;
+            border-radius: 4px;
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
@@ -209,9 +209,9 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
             color: var(--accent-soft);
         }
         .imagen-tab.active {
-            background: rgba(212, 168, 83, 0.15);
-            border-color: var(--accent-soft);
-            color: var(--accent-soft);
+            background: rgba(233, 30, 99, 0.15);
+            border-color: var(--accent);
+            color: var(--accent);
         }
         .imagen-panel {
             display: none;
@@ -221,7 +221,8 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
         }
     </style>
 
-    <script define:vars={{ id }}>
+    <script>
+        // @ts-nocheck
         const form = document.getElementById("evento-form");
         const errorMsg = document.getElementById("error-msg");
         const submitBtn = document.getElementById("submit-btn");
@@ -252,59 +253,45 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
 
         // Actualizar preview de "Imagen actual" al cambiar el select
         const selectImagen = document.getElementById("imagenUrl");
-        if (selectImagen && "value" in selectImagen) {
+        if (selectImagen) {
             selectImagen.addEventListener("change", () => {
                 const nuevaUrl = selectImagen.value;
-                if (imagenActual && "src" in imagenActual) {
+                if (imagenActual) {
                     if (nuevaUrl) {
                         imagenActual.src = nuevaUrl;
-                        if (
-                            imagenActualContainer &&
-                            "style" in imagenActualContainer
-                        ) {
+                        if (imagenActualContainer)
                             imagenActualContainer.style.display = "block";
-                        }
                     } else {
-                        if (
-                            imagenActualContainer &&
-                            "style" in imagenActualContainer
-                        ) {
+                        if (imagenActualContainer)
                             imagenActualContainer.style.display = "none";
-                        }
                     }
                 }
             });
         }
 
         // Preview del archivo nuevo
-        if (imagenFile && "files" in imagenFile) {
+        if (imagenFile) {
             imagenFile.addEventListener("change", () => {
-                const file = imagenFile.files && imagenFile.files[0];
-                if (!file) {
-                    if (previewContainer && "style" in previewContainer) {
+                const files = imagenFile.files;
+                if (!files || files.length === 0) {
+                    if (previewContainer)
                         previewContainer.style.display = "none";
-                    }
                     return;
                 }
+                const file = files[0];
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    if (preview && "src" in preview) {
+                    if (preview)
                         preview.src = String(e.target ? e.target.result : "");
-                    }
-                    if (previewContainer && "style" in previewContainer) {
+                    if (previewContainer)
                         previewContainer.style.display = "block";
-                    }
                     // También actualizar "Imagen actual" con el preview del archivo
-                    if (imagenActual && "src" in imagenActual) {
+                    if (imagenActual) {
                         imagenActual.src = String(
                             e.target ? e.target.result : "",
                         );
-                        if (
-                            imagenActualContainer &&
-                            "style" in imagenActualContainer
-                        ) {
+                        if (imagenActualContainer)
                             imagenActualContainer.style.display = "block";
-                        }
                     }
                 };
                 reader.readAsDataURL(file);
@@ -324,40 +311,15 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                 const elHora = document.getElementById("hora");
                 const elImagenUrl = document.getElementById("imagenUrl");
 
-                const titulo =
-                    elTitulo &&
-                    "value" in elTitulo &&
-                    typeof elTitulo.value === "string"
-                        ? elTitulo.value
-                        : "";
-                const lugar =
-                    elLugar &&
-                    "value" in elLugar &&
-                    typeof elLugar.value === "string"
-                        ? elLugar.value
-                        : "";
-                const fecha =
-                    elFecha &&
-                    "value" in elFecha &&
-                    typeof elFecha.value === "string"
-                        ? elFecha.value
-                        : "";
-                const hora =
-                    elHora &&
-                    "value" in elHora &&
-                    typeof elHora.value === "string"
-                        ? elHora.value
-                        : "";
-                let imagenUrl =
-                    elImagenUrl &&
-                    "value" in elImagenUrl &&
-                    typeof elImagenUrl.value === "string"
-                        ? elImagenUrl.value
-                        : "";
+                const titulo = elTitulo ? elTitulo.value : "";
+                const lugar = elLugar ? elLugar.value : "";
+                const fecha = elFecha ? elFecha.value : "";
+                const hora = elHora ? elHora.value : "";
+                let imagenUrl = elImagenUrl ? elImagenUrl.value : "";
 
                 try {
                     const file =
-                        imagenFile && "files" in imagenFile && imagenFile.files
+                        imagenFile && imagenFile.files
                             ? imagenFile.files[0]
                             : null;
                     if (file) {

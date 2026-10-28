@@ -203,7 +203,7 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
 
     <style>
         .dropzone {
-            border: 2px dashed rgba(212, 168, 83, 0.3);
+            border: 2px dashed rgba(233, 30, 99, 0.3);
             border-radius: 4px;
             padding: 2rem;
             text-align: center;
@@ -220,7 +220,7 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
         .dropzone:hover,
         .dropzone.dragover {
             border-color: var(--accent-soft);
-            background: rgba(212, 168, 83, 0.05);
+            background: rgba(233, 30, 99, 0.05);
         }
         .galeria-grid {
             display: grid;
@@ -229,7 +229,7 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
         }
         .galeria-item {
             background: var(--bg-soft);
-            border: 1px solid rgba(212, 168, 83, 0.12);
+            border: 1px solid rgba(255, 202, 40, 0.12);
             border-radius: 4px;
             overflow: hidden;
             transition:
@@ -237,7 +237,7 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                 transform 0.2s;
         }
         .galeria-item:hover {
-            border-color: rgba(212, 168, 83, 0.35);
+            border-color: rgba(255, 202, 40, 0.4);
             transform: translateY(-2px);
         }
         .galeria-item img {
@@ -267,21 +267,18 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
             letter-spacing: 0.08em;
             padding: 0.15rem 0.5rem;
             border-radius: 2px;
-            background: rgba(212, 168, 83, 0.15);
+            background: rgba(255, 202, 40, 0.15);
             color: var(--accent-soft);
         }
     </style>
 
     <script>
+        // @ts-nocheck
         const form = document.getElementById("upload-form");
-        const fileInput = document.getElementById(
-            "file-input",
-        ) as HTMLInputElement | null;
+        const fileInput = document.getElementById("file-input");
         const dropzone = document.getElementById("dropzone");
         const dropzoneContent = document.getElementById("dropzone-content");
-        const preview = document.getElementById(
-            "preview",
-        ) as HTMLImageElement | null;
+        const preview = document.getElementById("preview");
         const submitBtn = document.getElementById("submit-btn");
         const statusMsg = document.getElementById("status-msg");
         const errorMsg = document.getElementById("error-msg");
@@ -312,7 +309,8 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
 
         function showPreview() {
             if (!fileInput || !fileInput.files) return;
-            const file = fileInput.files[0];
+            const filesArray = Array.from(fileInput.files);
+            const file = filesArray.length > 0 ? filesArray[0] : null;
             if (!file || !preview || !dropzoneContent) return;
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -330,7 +328,12 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                 statusMsg.textContent = "Subiendo...";
                 submitBtn.setAttribute("disabled", "true");
 
-                const file = fileInput.files ? fileInput.files[0] : null;
+                let file = null;
+                if (fileInput.files && fileInput.files.length > 0) {
+                    const filesArray = Array.from(fileInput.files);
+                    file = filesArray[0];
+                }
+
                 const altInput = document.getElementById("alt");
                 const seccionSelect = document.getElementById("seccion");
                 const alt =

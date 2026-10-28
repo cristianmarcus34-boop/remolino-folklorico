@@ -143,11 +143,9 @@ const {
         position: sticky;
         top: 0;
         z-index: 100;
-        /* Negro puro con transparencia para el blur */
         background: rgba(0, 0, 0, 0.75);
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
-        /* Borde inferior con un toque fucsia muy sutil */
         border-bottom: 1px solid rgba(233, 30, 99, 0.15);
       }
       .header-inner {
@@ -178,7 +176,6 @@ const {
         height: 32px;
         border-radius: 50%;
         flex-shrink: 0;
-        /* Resplandor fucsia/dorado en el logo */
         box-shadow:
           0 0 15px rgba(233, 30, 99, 0.4),
           0 0 30px rgba(255, 202, 40, 0.2);
@@ -211,7 +208,6 @@ const {
       nav a:hover {
         color: var(--accent-soft);
       }
-      /* Línea de hover con degradado del logo */
       nav a::after {
         content: "";
         position: absolute;
@@ -255,7 +251,7 @@ const {
          ============================ */
       .site-footer {
         position: relative;
-        background: var(--bg-soft); /* Negro un poco más claro */
+        background: var(--bg-soft);
         border-top: 1px solid rgba(255, 202, 40, 0.1);
         padding: 4rem 0 2rem;
         overflow: hidden;
@@ -267,7 +263,6 @@ const {
         transform: translateX(-50%);
         width: 600px;
         height: 400px;
-        /* Resplandor con el fucsia del logo */
         background: radial-gradient(
           ellipse,
           rgba(233, 30, 99, 0.12),

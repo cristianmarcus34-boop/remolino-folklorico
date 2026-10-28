@@ -129,7 +129,7 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                             >
                                 <img
                                     id="preview"
-                                    style="max-width: 100%; max-height: 200px; border-radius: 3px;"
+                                    style="max-width: 100%; max-height: 200px; border-radius: 4px; border: 1px solid rgba(255, 202, 40, 0.3);"
                                 />
                             </div>
                         </div>
@@ -160,10 +160,10 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
         }
         .imagen-tab {
             background: none;
-            border: 1px solid rgba(212, 168, 83, 0.2);
+            border: 1px solid rgba(233, 30, 99, 0.3);
             color: var(--text-muted);
             padding: 0.4rem 0.9rem;
-            border-radius: 2px;
+            border-radius: 4px;
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
@@ -173,9 +173,9 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
             color: var(--accent-soft);
         }
         .imagen-tab.active {
-            background: rgba(212, 168, 83, 0.15);
-            border-color: var(--accent-soft);
-            color: var(--accent-soft);
+            background: rgba(233, 30, 99, 0.15);
+            border-color: var(--accent);
+            color: var(--accent);
         }
         .imagen-panel {
             display: none;
@@ -186,18 +186,13 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
     </style>
 
     <script>
-        const form = document.querySelector<HTMLFormElement>("#evento-form");
+        // @ts-nocheck
+        const form = document.getElementById("evento-form");
         const errorMsg = document.getElementById("error-msg");
         const submitBtn = document.getElementById("submit-btn");
-        const imagenFile = document.getElementById(
-            "imagenFile",
-        ) as HTMLInputElement | null;
-        const preview = document.getElementById(
-            "preview",
-        ) as HTMLImageElement | null;
-        const previewContainer = document.getElementById(
-            "preview-container",
-        ) as HTMLElement | null;
+        const imagenFile = document.getElementById("imagenFile");
+        const preview = document.getElementById("preview");
+        const previewContainer = document.getElementById("preview-container");
 
         // Tabs
         const tabs = document.querySelectorAll(".imagen-tab");
@@ -220,16 +215,19 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
         // Preview de imagen
         if (imagenFile) {
             imagenFile.addEventListener("change", () => {
-                const file = imagenFile.files && imagenFile.files[0];
-                if (!file || !preview || !previewContainer) {
+                const files = imagenFile.files;
+                if (!files || files.length === 0) {
                     if (previewContainer)
                         previewContainer.style.display = "none";
                     return;
                 }
+                const file = files[0];
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    preview.src = String(e.target ? e.target.result : "");
-                    previewContainer.style.display = "block";
+                    if (preview)
+                        preview.src = String(e.target ? e.target.result : "");
+                    if (previewContainer)
+                        previewContainer.style.display = "block";
                 };
                 reader.readAsDataURL(file);
             });
@@ -248,39 +246,13 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                 const elHora = document.getElementById("hora");
                 const elImagenUrl = document.getElementById("imagenUrl");
 
-                const titulo =
-                    elTitulo &&
-                    "value" in elTitulo &&
-                    typeof elTitulo.value === "string"
-                        ? elTitulo.value
-                        : "";
-                const lugar =
-                    elLugar &&
-                    "value" in elLugar &&
-                    typeof elLugar.value === "string"
-                        ? elLugar.value
-                        : "";
-                const fecha =
-                    elFecha &&
-                    "value" in elFecha &&
-                    typeof elFecha.value === "string"
-                        ? elFecha.value
-                        : "";
-                const hora =
-                    elHora &&
-                    "value" in elHora &&
-                    typeof elHora.value === "string"
-                        ? elHora.value
-                        : "";
-                let imagenUrl =
-                    elImagenUrl &&
-                    "value" in elImagenUrl &&
-                    typeof elImagenUrl.value === "string"
-                        ? elImagenUrl.value
-                        : "";
+                const titulo = elTitulo ? elTitulo.value : "";
+                const lugar = elLugar ? elLugar.value : "";
+                const fecha = elFecha ? elFecha.value : "";
+                const hora = elHora ? elHora.value : "";
+                let imagenUrl = elImagenUrl ? elImagenUrl.value : "";
 
                 try {
-                    // Si hay archivo nuevo, subirlo primero
                     const file =
                         imagenFile && imagenFile.files
                             ? imagenFile.files[0]
@@ -302,7 +274,6 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                         const { url } = await uploadRes.json();
                         imagenUrl = url;
 
-                        // Guardar también en la galería
                         const alt = titulo || "Imagen de evento";
                         await fetch("/api/galeria", {
                             method: "POST",

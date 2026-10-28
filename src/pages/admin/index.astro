@@ -157,14 +157,15 @@ const listaEventos = await db
       padding: 1rem 1.5rem;
       transition: border-color 0.2s ease;
     }
+    /* Borde e iluminación con colores del logo */
     .evento-card-imagen {
       width: 80px;
       height: 80px;
       flex-shrink: 0;
       border-radius: 4px;
       overflow: hidden;
-      background: rgba(212, 168, 83, 0.06);
-      border: 1px solid rgba(212, 168, 83, 0.12);
+      background: rgba(255, 202, 40, 0.06); /* Fondo dorado sutil */
+      border: 1px solid rgba(255, 202, 40, 0.15); /* Borde dorado */
     }
     .evento-card-imagen img {
       width: 100%;
@@ -175,6 +176,10 @@ const listaEventos = await db
     }
     .evento-card:hover .evento-card-imagen img {
       transform: scale(1.05);
+    }
+    .evento-card:hover .evento-card-imagen {
+      border-color: rgba(233, 30, 99, 0.5); /* Borde fucsia al hover */
+      box-shadow: 0 0 15px rgba(233, 30, 99, 0.2); /* Resplandor fucsia */
     }
     .evento-card-imagen-placeholder {
       width: 100%;

@@ -29,7 +29,13 @@ if (session) {
         <header class="admin-header">
             <div class="container admin-header-inner">
                 <a href="/admin" class="admin-logo">
-                    <span class="admin-logo-mark">R</span>
+                    <img
+                        src="/favicon-32x32.png"
+                        alt=""
+                        class="admin-logo-mark"
+                        width="32"
+                        height="32"
+                    />
                     <span
                         >Remolino <span class="admin-logo-sub">Panel</span
                         ></span
@@ -132,12 +138,14 @@ if (session) {
 
         <style>
             .admin-header {
-                background: rgba(26, 20, 16, 0.95);
-                border-bottom: 1px solid rgba(212, 168, 83, 0.12);
+                /* Fondo negro puro con transparencia */
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(16px) saturate(180%);
+                -webkit-backdrop-filter: blur(16px) saturate(180%);
+                border-bottom: 1px solid rgba(233, 30, 99, 0.15); /* Borde fucsia */
                 position: sticky;
                 top: 0;
                 z-index: 100;
-                backdrop-filter: blur(12px);
             }
             .admin-header-inner {
                 display: flex;
@@ -158,16 +166,15 @@ if (session) {
                 font-weight: 500;
             }
             .admin-logo-mark {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 30px;
-                height: 30px;
-                background: var(--accent);
-                color: var(--text);
+                display: inline-block;
+                width: 32px;
+                height: 32px;
                 border-radius: 50%;
-                font-size: 0.9rem;
-                font-weight: 600;
+                object-fit: cover;
+                /* Resplandor fucsia y dorado */
+                box-shadow:
+                    0 0 15px rgba(233, 30, 99, 0.4),
+                    0 0 30px rgba(255, 202, 40, 0.2);
             }
             .admin-logo-sub {
                 color: var(--text-muted);
@@ -206,8 +213,8 @@ if (session) {
                 min-width: 18px;
                 height: 18px;
                 padding: 0 0.4rem;
-                background: var(--accent);
-                color: var(--text);
+                background: var(--accent); /* Fucsia */
+                color: #ffffff;
                 border-radius: 9px;
                 font-size: 0.65rem;
                 font-weight: 600;
@@ -230,9 +237,9 @@ if (session) {
                 display: inline-flex;
                 align-items: center;
                 gap: 0.4rem;
-                background: rgba(212, 168, 83, 0.08);
-                border: 1px solid rgba(212, 168, 83, 0.2);
-                color: var(--accent-soft);
+                background: rgba(233, 30, 99, 0.1); /* Fondo fucsia sutil */
+                border: 1px solid rgba(233, 30, 99, 0.3); /* Borde fucsia */
+                color: var(--accent);
                 padding: 0.45rem 0.9rem;
                 border-radius: 2px;
                 font-size: 0.75rem;
@@ -243,16 +250,16 @@ if (session) {
                 text-decoration: none;
             }
             .admin-back-btn:hover {
-                background: rgba(212, 168, 83, 0.15);
-                border-color: var(--accent-soft);
-                color: var(--text);
+                background: rgba(233, 30, 99, 0.2);
+                border-color: var(--accent);
+                color: #ffffff;
             }
             .admin-logout-btn {
                 display: inline-flex;
                 align-items: center;
                 gap: 0.4rem;
                 background: none;
-                border: 1px solid rgba(212, 168, 83, 0.25);
+                border: 1px solid rgba(255, 202, 40, 0.3); /* Borde dorado */
                 color: var(--text-muted);
                 padding: 0.45rem 0.9rem;
                 border-radius: 2px;
@@ -263,7 +270,7 @@ if (session) {
                 transition: all 0.2s;
             }
             .admin-logout-btn:hover {
-                border-color: var(--accent);
+                border-color: var(--accent-soft);
                 color: var(--accent-soft);
             }
             @media (max-width: 900px) {
