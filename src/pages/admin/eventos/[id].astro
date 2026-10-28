@@ -188,41 +188,10 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
         </div>
     </section>
 
-    <style>
-        .imagen-tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.8rem;
-        }
-        .imagen-tab {
-            background: none;
-            border: 1px solid rgba(233, 30, 99, 0.3);
-            color: var(--text-muted);
-            padding: 0.4rem 0.9rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .imagen-tab:hover {
-            border-color: var(--accent-soft);
-            color: var(--accent-soft);
-        }
-        .imagen-tab.active {
-            background: rgba(233, 30, 99, 0.15);
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-        .imagen-panel {
-            display: none;
-        }
-        .imagen-panel.active {
-            display: block;
-        }
-    </style>
-
     <script define:vars={{ id }}>
         // @ts-nocheck
+        import { upload } from "@vercel/blob/client";
+
         const form = document.getElementById("evento-form");
         const errorMsg = document.getElementById("error-msg");
         const submitBtn = document.getElementById("submit-btn");
@@ -285,7 +254,6 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                         preview.src = String(e.target ? e.target.result : "");
                     if (previewContainer)
                         previewContainer.style.display = "block";
-                    // También actualizar "Imagen actual" con el preview del archivo
                     if (imagenActual) {
                         imagenActual.src = String(
                             e.target ? e.target.result : "",
@@ -323,28 +291,24 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                             ? imagenFile.files[0]
                             : null;
                     if (file) {
-                        const uploadData = new FormData();
-                        uploadData.append("file", file);
-                        const uploadRes = await fetch("/api/upload", {
-                            method: "POST",
-                            body: uploadData,
-                            credentials: "include",
+                        // SUBIDA DIRECTA A BLOB (antes usaba /api/upload)
+                        const blob = await upload(file.name, file, {
+                            access: "public",
+                            handleUploadUrl: "/api/upload-token",
                         });
-                        if (!uploadRes.ok) {
-                            const data = await uploadRes.json();
-                            throw new Error(
-                                data.error || "Error al subir la imagen",
-                            );
-                        }
-                        const { url } = await uploadRes.json();
-                        imagenUrl = url;
+
+                        imagenUrl = blob.url;
 
                         const alt = titulo || "Imagen de evento";
                         await fetch("/api/galeria", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             credentials: "include",
-                            body: JSON.stringify({ alt, url, seccion: null }),
+                            body: JSON.stringify({
+                                alt,
+                                url: imagenUrl,
+                                seccion: null,
+                            }),
                         });
                     }
 
