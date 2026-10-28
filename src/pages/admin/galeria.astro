@@ -93,6 +93,9 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                             >
                             <option value="inicio">Imagen en el Inicio</option>
                             <option value="eventos">Imagen en Eventos</option>
+                            <option value="sumate"
+                                >Imagen en "Sumate al grupo"</option
+                            >
                         </select>
                     </div>
 
@@ -145,6 +148,7 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                     <option value="nosotros">Nosotros</option>
                     <option value="inicio">Inicio</option>
                     <option value="eventos">Eventos</option>
+                    <option value="sumate">Sumate al grupo</option>
                 </select>
             </div>
 
@@ -244,6 +248,14 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                                             >
                                                 Eventos
                                             </option>
+                                            <option
+                                                value="sumate"
+                                                selected={
+                                                    img.seccion === "sumate"
+                                                }
+                                            >
+                                                Sumate al grupo
+                                            </option>
                                         </select>
                                     </div>
                                     <div style="display: flex; gap: 0.3rem; flex-shrink: 0;">
@@ -253,6 +265,7 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                                             data-id={img.id}
                                             data-alt={img.alt}
                                             data-seccion={img.seccion || ""}
+                                            data-url={img.url}
                                         >
                                             Editar
                                         </button>
@@ -279,6 +292,41 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
         <div class="modal-box">
             <h2 class="modal-title">Editar imagen</h2>
             <form id="edit-form">
+                <!-- Preview de la imagen actual -->
+                <div class="edit-imagen-actual">
+                    <img
+                        id="edit-imagen-preview"
+                        src=""
+                        alt="Imagen actual"
+                        loading="lazy"
+                    />
+                </div>
+
+                <!-- Input para cambiar la imagen -->
+                <div class="admin-field">
+                    <label class="admin-label" for="edit-imagen-file"
+                        >Cambiar imagen (opcional)</label
+                    >
+                    <input
+                        type="file"
+                        id="edit-imagen-file"
+                        accept="image/*"
+                        class="admin-input"
+                        style="padding: 0.5rem;"
+                    />
+                    <p class="edit-help">
+                        Si no elegís una nueva, se mantiene la actual.
+                    </p>
+                    <p
+                        class="edit-warning"
+                        id="edit-warning"
+                        style="display: none;"
+                    >
+                        ⚠️ Al guardar, la imagen actual se eliminará de Vercel
+                        Blob y no se podrá recuperar.
+                    </p>
+                </div>
+
                 <div class="admin-field">
                     <label class="admin-label" for="edit-alt"
                         >Descripción (alt) *</label
@@ -287,9 +335,11 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                         id="edit-alt"
                         type="text"
                         required
+                        minlength="2"
                         class="admin-input"
                     />
                 </div>
+
                 <div class="admin-field">
                     <label class="admin-label" for="edit-seccion"
                         >¿Dónde se muestra?</label
@@ -306,14 +356,19 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                         >
                         <option value="inicio">Imagen en el Inicio</option>
                         <option value="eventos">Imagen en Eventos</option>
+                        <option value="sumate"
+                            >Imagen en "Sumate al grupo"</option
+                        >
                     </select>
                 </div>
+
                 <p
                     id="edit-error"
                     class="admin-msg error"
                     style="display: none;"
                 >
                 </p>
+
                 <div class="modal-actions">
                     <button
                         type="button"
@@ -475,7 +530,7 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
             border: 1px solid rgba(255, 202, 40, 0.3);
             border-radius: 6px;
             padding: 2rem;
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -494,6 +549,37 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
         }
         .modal-actions .admin-link-btn {
             cursor: pointer;
+        }
+
+        /* Preview imagen en modal */
+        .edit-imagen-actual {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.2rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 202, 40, 0.15);
+            border-radius: 4px;
+        }
+        .edit-imagen-actual img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 4px;
+            object-fit: contain;
+        }
+        .edit-help {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+        }
+        .edit-warning {
+            font-size: 0.8rem;
+            color: #ff9800;
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.7rem;
+            background: rgba(255, 152, 0, 0.08);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 4px;
         }
     </style>
 
@@ -661,7 +747,6 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                 const id = sel.getAttribute("data-id");
                 const seccion = sel.value || null;
 
-                // Actualizar el data-seccion del item para el filtro
                 const item = sel.closest(".galeria-item");
                 if (item) {
                     item.setAttribute(
@@ -725,28 +810,61 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
         });
 
         // ==================
-        // EDITAR (modal)
+        // EDITAR (modal con cambio de imagen)
         // ==================
         const editModal = document.getElementById("edit-modal");
         const editForm = document.getElementById("edit-form");
         const editAlt = document.getElementById("edit-alt");
         const editSeccion = document.getElementById("edit-seccion");
+        const editImagenFile = document.getElementById("edit-imagen-file");
+        const editImagenPreview = document.getElementById(
+            "edit-imagen-preview",
+        );
+        const editWarning = document.getElementById("edit-warning");
         const editError = document.getElementById("edit-error");
         const editSave = document.getElementById("edit-save");
         const editCancel = document.getElementById("edit-cancel");
 
         let editImgId = null;
+        let editImgUrlActual = null;
 
         document.querySelectorAll(".edit-img-btn").forEach((btn) => {
             btn.addEventListener("click", () => {
                 editImgId = btn.getAttribute("data-id");
+                editImgUrlActual = btn.getAttribute("data-url") || "";
                 editAlt.value = btn.getAttribute("data-alt") || "";
                 editSeccion.value = btn.getAttribute("data-seccion") || "";
+                editImagenPreview.src = editImgUrlActual;
+                editImagenFile.value = ""; // resetear input de archivo
+                editWarning.style.display = "none";
                 editError.style.display = "none";
+                editSave.removeAttribute("disabled");
+                editSave.textContent = "Guardar cambios";
                 editModal.style.display = "flex";
                 editAlt.focus();
             });
         });
+
+        // Preview de nueva imagen + mostrar advertencia
+        if (editImagenFile) {
+            editImagenFile.addEventListener("change", () => {
+                const files = editImagenFile.files;
+                if (!files || files.length === 0) {
+                    editWarning.style.display = "none";
+                    editImagenPreview.src = editImgUrlActual;
+                    return;
+                }
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    editImagenPreview.src = String(
+                        e.target ? e.target.result : "",
+                    );
+                    editWarning.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
         if (editCancel) {
             editCancel.addEventListener("click", () => {
@@ -792,15 +910,41 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                 }
 
                 try {
+                    // 1. Si hay archivo nuevo, subirlo primero
+                    let urlNueva = null;
+                    const files = editImagenFile.files;
+                    if (files && files.length > 0) {
+                        const file = files[0];
+                        editSave.textContent = "Subiendo imagen...";
+                        const blob = await upload(file.name, file, {
+                            access: "public",
+                            handleUploadUrl: "/api/upload-token",
+                        });
+                        urlNueva = blob.url;
+                        editSave.textContent = "Guardando...";
+                    }
+
+                    // 2. Armar el body del PATCH
+                    const body = { alt, seccion };
+                    if (urlNueva) {
+                        body.url = urlNueva;
+                    }
+
+                    // 3. Enviar el PATCH
                     const res = await fetch(`/api/galeria/${editImgId}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         credentials: "include",
-                        body: JSON.stringify({ alt, seccion }),
+                        body: JSON.stringify(body),
                     });
 
                     if (res.ok) {
-                        window.showToast("Imagen actualizada", "success");
+                        window.showToast(
+                            urlNueva
+                                ? "Imagen actualizada (reemplazada)"
+                                : "Imagen actualizada",
+                            "success",
+                        );
                         setTimeout(() => window.location.reload(), 800);
                     } else {
                         const data = await res.json().catch(() => ({}));
@@ -811,7 +955,10 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                         editSave.textContent = "Guardar cambios";
                     }
                 } catch (err) {
-                    editError.textContent = "Error de conexión";
+                    editError.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
                     editError.style.display = "block";
                     editSave.removeAttribute("disabled");
                     editSave.textContent = "Guardar cambios";
@@ -834,9 +981,7 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                     e.dataTransfer.effectAllowed = "move";
                     try {
                         e.dataTransfer.setData("text/plain", item.dataset.id);
-                    } catch (err) {
-                        /* algunos browsers se quejan */
-                    }
+                    } catch (err) {}
                 });
 
                 item.addEventListener("dragend", () => {
@@ -876,7 +1021,6 @@ const imagenes = await db.select().from(galeria).orderBy(asc(galeria.orden));
                         item.parentNode.insertBefore(draggedEl, item);
                     }
 
-                    // Debounce: guardar el orden 300ms después del último drop
                     if (ordenGuardadoTimer) clearTimeout(ordenGuardadoTimer);
                     ordenGuardadoTimer = setTimeout(guardarOrden, 300);
                 });

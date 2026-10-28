@@ -10,9 +10,15 @@ import { galeria } from "../db/schema.js";
 export const prerender = false;
 
 const imagenes = await db.select().from(galeria);
+
 const fotoInicio =
   imagenes
     .filter((f) => f.seccion === "inicio")
+    .sort((a, b) => b.id - a.id)[0] || null;
+
+const fotoSumate =
+  imagenes
+    .filter((f) => f.seccion === "sumate")
     .sort((a, b) => b.id - a.id)[0] || null;
 ---
 
@@ -55,7 +61,6 @@ const fotoInicio =
         </div>
       </div>
       <div class="hero-visual hero-anim hero-anim-3">
-        <!-- Sombra 3D debajo del remolino -->
         <div class="hero-visual-shadow"></div>
         <RemolinoCanvas />
       </div>
@@ -86,6 +91,107 @@ const fotoInicio =
               <img
                 src={fotoInicio.url}
                 alt={fotoInicio.alt}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          ) : (
+            <div class="placeholder">Foto del grupo</div>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- 👇 NUEVA SECCIÓN: SUMATE AL GRUPO -->
+  <section class="sumate">
+    <div class="sumate-glow"></div>
+    <div class="container sumate-grid">
+      <div class="sumate-content reveal">
+        <p class="section-kicker">Sumate al grupo</p>
+        <h2>¿Querés bailar con nosotros?</h2>
+        <p class="sumate-text">
+          Estamos abiertos a nuevas integrantes. No hace falta experiencia
+          previa ni requisitos: solo ganas de bailar, aprender y compartir.
+          Mujeres, hombres y niños, todos son bienvenidos a sumarse a esta
+          familia del folclor.
+        </p>
+
+        <div class="sumate-info">
+          <div class="info-item">
+            <div class="info-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div>
+              <span class="info-label">Horarios</span>
+              <span class="info-value">Lunes y miércoles · 19 hs</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+            <div>
+              <span class="info-label">Lugar</span>
+              <span class="info-value">
+                Soc. de Fomento Barrio General Belgrano<br />
+                Av. Mosconi 4975
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <a
+          href="https://wa.me/5491128386926?text=Hola%21%20Me%20interesa%20sumarme%20al%20ballet%20folkl%C3%B3rico%20Remolino.%20%C2%BFMe%20podr%C3%ADan%20dar%20m%C3%A1s%20info%20sobre%20los%20ensayos%3F"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-whatsapp sumate-btn"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
+            ></path>
+          </svg>
+          Quiero sumarme
+        </a>
+      </div>
+
+      <div class="sumate-image reveal">
+        {
+          fotoSumate ? (
+            <div class="sumate-photo">
+              <img
+                src={fotoSumate.url}
+                alt={fotoSumate.alt}
                 loading="lazy"
                 decoding="async"
               />
@@ -142,11 +248,9 @@ const fotoInicio =
       min-height: 100vh;
       display: flex;
       align-items: center;
-      /* Menos espacio arriba para que no esté tan separado de la navbar */
       padding: 2rem 0 8rem;
       overflow: hidden;
-      background: var(--bg); /* Negro puro */
-      /* Grilla sutil de fondo */
+      background: var(--bg);
       background-image:
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
@@ -223,11 +327,8 @@ const fotoInicio =
       width: 100%;
       aspect-ratio: 1 / 1;
       max-height: 620px;
-      /* Resplandor sutil general */
       filter: drop-shadow(0 0 40px rgba(233, 30, 99, 0.2));
     }
-
-    /* Sombra elíptica 3D debajo del remolino */
     .hero-visual-shadow {
       position: absolute;
       bottom: 5%;
@@ -245,7 +346,6 @@ const fotoInicio =
       z-index: 0;
       pointer-events: none;
     }
-
     .hero-kicker {
       display: inline-flex;
       align-items: center;
@@ -391,7 +491,7 @@ const fotoInicio =
     }
 
     /* ============================
-       SECCIONES
+       SECCIONES GENERALES
        ============================ */
     .section-kicker {
       text-transform: uppercase;
@@ -470,7 +570,141 @@ const fotoInicio =
     }
 
     /* ============================
-       CTA
+       SUMATE AL GRUPO
+       ============================ */
+    .sumate {
+      position: relative;
+      padding: 7rem 0;
+      overflow: hidden;
+      background: var(--bg);
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
+      border-top: 1px solid rgba(255, 202, 40, 0.1);
+      border-bottom: 1px solid rgba(255, 202, 40, 0.1);
+    }
+    .sumate-glow {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translate(-30%, -50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(
+        circle,
+        rgba(233, 30, 99, 0.18),
+        transparent 65%
+      );
+      filter: blur(100px);
+      pointer-events: none;
+    }
+    .sumate-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .sumate h2 {
+      margin-bottom: 1.5rem;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #ffffff;
+    }
+    .sumate-text {
+      color: var(--text-muted);
+      font-weight: 300;
+      line-height: 1.8;
+      font-size: 1.05rem;
+      margin-bottom: 2.5rem;
+    }
+    .sumate-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(233, 30, 99, 0.1);
+      border: 1px solid rgba(233, 30, 99, 0.3);
+      color: var(--accent-soft);
+      flex-shrink: 0;
+    }
+    .info-label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent-soft);
+      margin-bottom: 0.3rem;
+      font-weight: 500;
+    }
+    .info-value {
+      display: block;
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.5;
+      font-weight: 300;
+    }
+    .sumate-btn {
+      background: rgba(0, 188, 212, 0.1);
+      color: var(--accent-alt);
+      border: 1px solid rgba(0, 188, 212, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 188, 212, 0.1);
+    }
+    .sumate-btn:hover {
+      background: rgba(0, 188, 212, 0.2);
+      color: #ffffff;
+      border-color: var(--accent-alt);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 188, 212, 0.3);
+    }
+    .sumate-btn svg {
+      position: relative;
+      top: 1px;
+    }
+    .sumate-photo {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      aspect-ratio: 4 / 5;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(233, 30, 99, 0.15);
+    }
+    .sumate-photo::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(255, 202, 40, 0.3);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+    .sumate-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .sumate-photo:hover img {
+      transform: scale(1.05);
+    }
+
+    /* ============================
+       CTA (CONTRATACIONES)
        ============================ */
     .cta {
       background: var(--bg-soft);
@@ -479,7 +713,6 @@ const fotoInicio =
       overflow: hidden;
       padding: 7rem 0;
       border-top: 1px solid rgba(255, 202, 40, 0.1);
-      border-bottom: 1px solid rgba(255, 202, 40, 0.1);
     }
     .cta-glow {
       position: absolute;
@@ -558,6 +791,15 @@ const fotoInicio =
         grid-template-columns: 1fr;
         gap: 3rem;
       }
+      .sumate-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+      .sumate-image {
+        order: -1;
+        max-width: 500px;
+        margin: 0 auto;
+      }
     }
 
     @media (max-width: 600px) {
@@ -591,6 +833,12 @@ const fotoInicio =
       .btn {
         padding: 0.95rem 2rem;
         font-size: 0.75rem;
+      }
+      .sumate {
+        padding: 5rem 0;
+      }
+      .sumate-info {
+        gap: 1.2rem;
       }
       .cta {
         padding: 5rem 0;
