@@ -22,32 +22,40 @@
     0.1,
     100,
   );
-  camera.position.z = 7.8;
+  camera.position.z = 9.2; // Un poco más lejos para que entre el remolino más largo
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.appendChild(renderer.domElement);
 
-  // Nueva paleta del logo: Fucsia, Dorado, Cian, Blanco
-  const colors = [0xe91e63, 0xffca28, 0x00bcd4, 0xf5f0e8];
+  const colors = [0xe91e63, 0xffca28, 0x00bcd4, 0x8bc34a];
 
-  const particleCount = 1800; // Más partículas para más densidad
+  const particleCount = 3000;
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
   const colorsArray = new Float32Array(particleCount * 3);
 
   for (let i = 0; i < particleCount; i++) {
     const t = i / particleCount;
-    const angle = t * Math.PI * 18;
-    const radius = 0.25 + t * 2.2;
-    const y = (t - 0.5) * 3.8;
+    const angle = t * Math.PI * 24;
+
+    const colorIndex = i % colors.length;
+    const radiusOffset = colorIndex * 0.25;
+
+    // EFECTO EMBUDO:
+    // Multiplicamos la apertura (2.2) por t (que va de 0 a 1).
+    // Abajo (t=0) el radio es 0.1 (finito). Arriba (t=1) el radio es 2.3 (abierto).
+    const radius = 0.1 + t * 2.2 + radiusOffset;
+
+    // MÁS LARGO: 10% más (antes 5.5, ahora 6.0)
+    const y = (t - 0.5) * 6.0;
 
     positions[i * 3] = Math.cos(angle) * radius;
     positions[i * 3 + 1] = y;
     positions[i * 3 + 2] = Math.sin(angle) * radius;
 
-    const color = new THREE.Color(colors[i % colors.length]);
+    const color = new THREE.Color(colors[colorIndex]);
     colorsArray[i * 3] = color.r;
     colorsArray[i * 3 + 1] = color.g;
     colorsArray[i * 3 + 2] = color.b;
@@ -57,13 +65,13 @@
   geometry.setAttribute("color", new THREE.BufferAttribute(colorsArray, 3));
 
   const material = new THREE.PointsMaterial({
-    size: 0.06, // Partículas más grandes para que brillen
+    size: 0.07,
     vertexColors: true,
     transparent: true,
     opacity: 1,
     sizeAttenuation: true,
     depthWrite: false,
-    blending: THREE.AdditiveBlending,
+    blending: THREE.NormalBlending,
   });
 
   const particles = new THREE.Points(geometry, material);
@@ -101,15 +109,15 @@
     const elapsed = timer.getElapsed();
 
     if (!reduceMotion) {
-      particles.rotation.y = elapsed * 0.15;
-      particles.rotation.x = Math.sin(elapsed * 0.2) * 0.1;
+      particles.rotation.y = elapsed * 0.2;
+      particles.rotation.x = Math.sin(elapsed * 0.3) * 0.15;
     }
 
     const targetX = mouse.x * maxShiftX;
     const targetY = mouse.y * maxShiftY;
 
-    particles.position.x += (targetX - particles.position.x) * 0.04;
-    particles.position.y += (targetY - particles.position.y) * 0.04;
+    particles.position.x += (targetX - particles.position.x) * 0.05;
+    particles.position.y += (targetY - particles.position.y) * 0.05;
 
     renderer.render(scene, camera);
   }
@@ -137,27 +145,26 @@
     position: relative;
   }
 
-  /* Halo de luz pulsante detrás del remolino */
   .remolino-container::before {
     content: "";
     position: absolute;
     inset: 10%;
     background: radial-gradient(
       circle,
-      rgba(233, 30, 99, 0.2) 0%,
-      rgba(0, 188, 212, 0.1) 50%,
+      rgba(233, 30, 99, 0.25) 0%,
+      rgba(255, 202, 40, 0.15) 40%,
       transparent 70%
     );
-    filter: blur(40px);
+    filter: blur(60px);
     border-radius: 50%;
     z-index: -1;
-    animation: pulseGlow 8s ease-in-out infinite alternate;
+    animation: pulseGlow 6s ease-in-out infinite alternate;
   }
 
   @keyframes pulseGlow {
     from {
       transform: scale(0.9);
-      opacity: 0.5;
+      opacity: 0.6;
     }
     to {
       transform: scale(1.1);
