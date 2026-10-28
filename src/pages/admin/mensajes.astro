@@ -102,6 +102,7 @@ const noLeidos = lista.filter((m) => !m.leido).length;
                                             type="button"
                                             class="admin-link-btn danger borrar-mensaje-btn"
                                             data-id={m.id}
+                                            data-nombre={m.nombre}
                                         >
                                             Eliminar
                                         </button>
@@ -158,40 +159,62 @@ const noLeidos = lista.filter((m) => !m.leido).length;
     </section>
 
     <script>
+        // @ts-nocheck
+        // ==================
+        // MARCAR COMO LEÍDO
+        // ==================
         document.querySelectorAll(".marcar-leido-btn").forEach((btn) => {
             btn.addEventListener("click", async () => {
                 const id = btn.getAttribute("data-id");
-                const res = await fetch(`/api/mensajes/${id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({ leido: true }),
-                });
-                if (res.ok) {
-                    window.location.reload();
-                } else {
-                    alert("Error al marcar como leído");
+                try {
+                    const res = await fetch(`/api/mensajes/${id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ leido: true }),
+                    });
+                    if (res.ok) {
+                        window.showToast(
+                            "Mensaje marcado como leído",
+                            "success",
+                        );
+                        setTimeout(() => window.location.reload(), 800);
+                    } else {
+                        window.showToast("Error al marcar como leído", "error");
+                    }
+                } catch (err) {
+                    window.showToast("Error de conexión", "error");
                 }
             });
         });
 
+        // ==================
+        // ELIMINAR MENSAJE
+        // ==================
         document.querySelectorAll(".borrar-mensaje-btn").forEach((btn) => {
             btn.addEventListener("click", async () => {
-                if (
-                    !confirm(
-                        "¿Eliminar este mensaje? Esta acción no se puede deshacer.",
-                    )
-                )
-                    return;
+                const nombre =
+                    btn.getAttribute("data-nombre") || "este mensaje";
+                const ok = await window.confirmDialog(
+                    `¿Eliminar el mensaje de ${nombre}? Esta acción no se puede deshacer.`,
+                    { title: "Eliminar mensaje", okText: "Sí, eliminar" },
+                );
+                if (!ok) return;
+
                 const id = btn.getAttribute("data-id");
-                const res = await fetch(`/api/mensajes/${id}`, {
-                    method: "DELETE",
-                    credentials: "include",
-                });
-                if (res.ok) {
-                    window.location.reload();
-                } else {
-                    alert("Error al eliminar");
+                try {
+                    const res = await fetch(`/api/mensajes/${id}`, {
+                        method: "DELETE",
+                        credentials: "include",
+                    });
+                    if (res.ok) {
+                        window.showToast("Mensaje eliminado", "success");
+                        setTimeout(() => window.location.reload(), 800);
+                    } else {
+                        window.showToast("Error al eliminar", "error");
+                    }
+                } catch (err) {
+                    window.showToast("Error de conexión", "error");
                 }
             });
         });

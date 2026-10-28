@@ -37,7 +37,7 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                 Modificá los datos y guardá los cambios.
             </p>
 
-            <form id="evento-form" class="admin-card">
+            <form id="evento-form" class="admin-card" data-id={id}>
                 <div class="admin-field">
                     <label class="admin-label" for="titulo">Título *</label>
                     <input
@@ -188,7 +188,7 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
         </div>
     </section>
 
-    <script define:vars={{ id }}>
+    <script>
         // @ts-nocheck
         import { upload } from "@vercel/blob/client";
 
@@ -202,6 +202,8 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
         const imagenActualContainer = document.getElementById(
             "imagen-actual-container",
         );
+
+        const id = form?.getAttribute("data-id");
 
         const tabs = document.querySelectorAll(".imagen-tab");
         const panels = document.querySelectorAll(".imagen-panel");
@@ -220,7 +222,6 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
             });
         });
 
-        // Actualizar preview de "Imagen actual" al cambiar el select
         const selectImagen = document.getElementById("imagenUrl");
         if (selectImagen) {
             selectImagen.addEventListener("change", () => {
@@ -238,7 +239,6 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
             });
         }
 
-        // Preview del archivo nuevo
         if (imagenFile) {
             imagenFile.addEventListener("change", () => {
                 const files = imagenFile.files;
@@ -291,7 +291,6 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                             ? imagenFile.files[0]
                             : null;
                     if (file) {
-                        // SUBIDA DIRECTA A BLOB (antes usaba /api/upload)
                         const blob = await upload(file.name, file, {
                             access: "public",
                             handleUploadUrl: "/api/upload-token",
@@ -312,7 +311,6 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                         });
                     }
 
-                    // Usamos la variable id inyectada por define:vars
                     const res = await fetch(`/api/eventos/${id}`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
@@ -327,7 +325,10 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                     });
 
                     if (res.ok) {
-                        window.location.href = "/admin";
+                        window.showToast("Evento actualizado", "success");
+                        setTimeout(() => {
+                            window.location.href = "/admin";
+                        }, 800);
                     } else {
                         const data = await res.json().catch(() => ({}));
                         errorMsg.textContent = data.error || "Error al guardar";

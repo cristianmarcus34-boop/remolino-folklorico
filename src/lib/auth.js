@@ -18,4 +18,16 @@ export const auth = betterAuth({
     advanced: {
         useSecureCookies: false,
     },
+
+    // 👇 Le decimos a Better Auth que "role" existe en el user
+    user: {
+        additionalFields: {
+            role: {
+                type: 'string',
+                required: false,
+                defaultValue: 'editor',
+                input: false, // no se puede setear desde signUpEmail público
+            },
+        },
+    },
 });

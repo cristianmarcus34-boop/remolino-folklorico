@@ -1,20 +1,30 @@
 ---
 import "../styles/global.css";
 import { db } from "../db/index.js";
-import { mensajes } from "../db/schema.js";
+import { mensajes, user } from "../db/schema.js";
 import { eq } from "drizzle-orm";
+import Toast from "../components/Toast.astro";
+import ConfirmDialog from "../components/ConfirmDialog.astro";
 
 const { title = "Panel | Remolino Folklórico" } = Astro.props;
 const session = Astro.locals.session;
 const currentPath = Astro.url.pathname;
 
 let noLeidos = 0;
+let esAdmin = false;
+
 if (session) {
     const pendientes = await db
         .select()
         .from(mensajes)
         .where(eq(mensajes.leido, false));
     noLeidos = pendientes.length;
+
+    const [usuarioActual] = await db
+        .select()
+        .from(user)
+        .where(eq(user.id, session.user.id));
+    esAdmin = usuarioActual?.role === "admin";
 }
 ---
 
@@ -43,6 +53,15 @@ if (session) {
                 </a>
 
                 <nav class="admin-nav">
+                    <!-- 👇 AYUDA PRIMERO -->
+                    <a
+                        href="/admin/ayuda"
+                        class:list={[
+                            {
+                                active: currentPath.startsWith("/admin/ayuda"),
+                            },
+                        ]}>Ayuda</a
+                    >
                     <a
                         href="/admin"
                         class:list={[{ active: currentPath === "/admin" }]}
@@ -83,6 +102,22 @@ if (session) {
                             )
                         }
                     </a>
+                    {
+                        esAdmin && (
+                            <a
+                                href="/admin/usuarios"
+                                class:list={[
+                                    {
+                                        active: currentPath.startsWith(
+                                            "/admin/usuarios",
+                                        ),
+                                    },
+                                ]}
+                            >
+                                Usuarios
+                            </a>
+                        )
+                    }
                 </nav>
 
                 <div class="admin-user">
@@ -123,6 +158,9 @@ if (session) {
             <slot />
         </main>
 
+        <Toast />
+        <ConfirmDialog />
+
         <script>
             const logoutBtn = document.getElementById("logout-btn");
             if (logoutBtn) {
@@ -138,11 +176,10 @@ if (session) {
 
         <style>
             .admin-header {
-                /* Fondo negro puro con transparencia */
                 background: rgba(0, 0, 0, 0.75);
                 backdrop-filter: blur(16px) saturate(180%);
                 -webkit-backdrop-filter: blur(16px) saturate(180%);
-                border-bottom: 1px solid rgba(233, 30, 99, 0.15); /* Borde fucsia */
+                border-bottom: 1px solid rgba(233, 30, 99, 0.15);
                 position: sticky;
                 top: 0;
                 z-index: 100;
@@ -171,7 +208,6 @@ if (session) {
                 height: 32px;
                 border-radius: 50%;
                 object-fit: cover;
-                /* Resplandor fucsia y dorado */
                 box-shadow:
                     0 0 15px rgba(233, 30, 99, 0.4),
                     0 0 30px rgba(255, 202, 40, 0.2);
@@ -186,6 +222,7 @@ if (session) {
                 display: flex;
                 gap: 1.5rem;
                 align-items: center;
+                flex-wrap: wrap;
             }
             .admin-nav a {
                 color: var(--text-muted);
@@ -213,7 +250,7 @@ if (session) {
                 min-width: 18px;
                 height: 18px;
                 padding: 0 0.4rem;
-                background: var(--accent); /* Fucsia */
+                background: var(--accent);
                 color: #ffffff;
                 border-radius: 9px;
                 font-size: 0.65rem;
@@ -237,8 +274,8 @@ if (session) {
                 display: inline-flex;
                 align-items: center;
                 gap: 0.4rem;
-                background: rgba(233, 30, 99, 0.1); /* Fondo fucsia sutil */
-                border: 1px solid rgba(233, 30, 99, 0.3); /* Borde fucsia */
+                background: rgba(233, 30, 99, 0.1);
+                border: 1px solid rgba(233, 30, 99, 0.3);
                 color: var(--accent);
                 padding: 0.45rem 0.9rem;
                 border-radius: 2px;
@@ -259,7 +296,7 @@ if (session) {
                 align-items: center;
                 gap: 0.4rem;
                 background: none;
-                border: 1px solid rgba(255, 202, 40, 0.3); /* Borde dorado */
+                border: 1px solid rgba(255, 202, 40, 0.3);
                 color: var(--text-muted);
                 padding: 0.45rem 0.9rem;
                 border-radius: 2px;

@@ -27,7 +27,24 @@ const listaEventos = await db
             Gestioná las próximas presentaciones del grupo.
           </p>
         </div>
-        <a href="/admin/eventos/nuevo" class="btn">+ Nuevo evento</a>
+        <div class="admin-header-actions">
+          <a href="/admin/ayuda" class="admin-link-btn">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Ayuda
+          </a>
+          <a href="/admin/eventos/nuevo" class="btn">+ Nuevo evento</a>
+        </div>
       </div>
 
       {
@@ -106,6 +123,7 @@ const listaEventos = await db
                     type="button"
                     class="admin-link-btn danger delete-btn"
                     data-id={ev.id}
+                    data-titulo={ev.titulo}
                   >
                     Eliminar
                   </button>
@@ -119,18 +137,30 @@ const listaEventos = await db
   </section>
 
   <script>
+    // @ts-nocheck
     document.querySelectorAll(".delete-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        if (!confirm("¿Eliminar este evento?")) return;
+        const titulo = btn.getAttribute("data-titulo") || "este evento";
+        const ok = await window.confirmDialog(
+          `¿Eliminar "${titulo}"? No se podrá recuperar.`,
+          { title: "Eliminar evento", okText: "Sí, eliminar" },
+        );
+        if (!ok) return;
+
         const id = btn.getAttribute("data-id");
-        const res = await fetch(`/api/eventos/${id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (res.ok) {
-          window.location.reload();
-        } else {
-          alert("Error al eliminar");
+        try {
+          const res = await fetch(`/api/eventos/${id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          if (res.ok) {
+            window.showToast("Evento eliminado", "success");
+            setTimeout(() => window.location.reload(), 800);
+          } else {
+            window.showToast("Error al eliminar", "error");
+          }
+        } catch (err) {
+          window.showToast("Error de conexión", "error");
         }
       });
     });
@@ -145,6 +175,17 @@ const listaEventos = await db
       margin-bottom: 2rem;
       flex-wrap: wrap;
     }
+    .admin-header-actions {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .admin-link-btn svg {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
     .eventos-grid {
       display: flex;
       flex-direction: column;
@@ -157,15 +198,14 @@ const listaEventos = await db
       padding: 1rem 1.5rem;
       transition: border-color 0.2s ease;
     }
-    /* Borde e iluminación con colores del logo */
     .evento-card-imagen {
       width: 80px;
       height: 80px;
       flex-shrink: 0;
       border-radius: 4px;
       overflow: hidden;
-      background: rgba(255, 202, 40, 0.06); /* Fondo dorado sutil */
-      border: 1px solid rgba(255, 202, 40, 0.15); /* Borde dorado */
+      background: rgba(255, 202, 40, 0.06);
+      border: 1px solid rgba(255, 202, 40, 0.15);
     }
     .evento-card-imagen img {
       width: 100%;
@@ -178,8 +218,8 @@ const listaEventos = await db
       transform: scale(1.05);
     }
     .evento-card:hover .evento-card-imagen {
-      border-color: rgba(233, 30, 99, 0.5); /* Borde fucsia al hover */
-      box-shadow: 0 0 15px rgba(233, 30, 99, 0.2); /* Resplandor fucsia */
+      border-color: rgba(233, 30, 99, 0.5);
+      box-shadow: 0 0 15px rgba(233, 30, 99, 0.2);
     }
     .evento-card-imagen-placeholder {
       width: 100%;

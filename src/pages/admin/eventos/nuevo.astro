@@ -120,8 +120,8 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                             <p
                                 style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
                             >
-                                JPG, PNG o WebP · máx 4.5 MB. La imagen se
-                                guarda en la galería y se asigna al evento.
+                                JPG, PNG o WebP · máx 10 MB. La imagen se guarda
+                                en la galería y se asigna al evento.
                             </p>
                             <div
                                 id="preview-container"
@@ -258,28 +258,24 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                             ? imagenFile.files[0]
                             : null;
                     if (file) {
-                        const uploadData = new FormData();
-                        uploadData.append("file", file);
-                        const uploadRes = await fetch("/api/upload", {
-                            method: "POST",
-                            body: uploadData,
-                            credentials: "include",
+                        // Carga dinámica del SDK de Blob (solo cuando se necesita)
+                        const { upload } = await import("@vercel/blob/client");
+                        const blob = await upload(file.name, file, {
+                            access: "public",
+                            handleUploadUrl: "/api/upload-token",
                         });
-                        if (!uploadRes.ok) {
-                            const data = await uploadRes.json();
-                            throw new Error(
-                                data.error || "Error al subir la imagen",
-                            );
-                        }
-                        const { url } = await uploadRes.json();
-                        imagenUrl = url;
+                        imagenUrl = blob.url;
 
                         const alt = titulo || "Imagen de evento";
                         await fetch("/api/galeria", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             credentials: "include",
-                            body: JSON.stringify({ alt, url, seccion: null }),
+                            body: JSON.stringify({
+                                alt,
+                                url: imagenUrl,
+                                seccion: null,
+                            }),
                         });
                     }
 
@@ -299,7 +295,7 @@ const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
                     if (res.ok) {
                         window.location.href = "/admin";
                     } else {
-                        const data = await res.json();
+                        const data = await res.json().catch(() => ({}));
                         errorMsg.textContent = data.error || "Error al guardar";
                         errorMsg.style.display = "block";
                     }

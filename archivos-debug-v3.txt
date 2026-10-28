@@ -1,0 +1,135 @@
+﻿=== ARCHIVOS DE API RELACIONADOS ===
+
+============================================
+ARCHIVO: src\pages\api\eventos\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { eventos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.titulo || !body.lugar || !body.fecha) {
+        return new Response(
+            JSON.stringify({ error: 'Faltan campos obligatorios' }),
+            {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
+    }
+
+    const [nuevo] = await db
+        .insert(eventos)
+        .values({
+            titulo: body.titulo,
+            lugar: body.lugar,
+            fecha: new Date(body.fecha),
+            hora: body.hora || null,
+            imagenUrl: body.imagenUrl || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nuevo), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+============================================
+ARCHIVO: src\pages\api\galeria\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { galeria } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.alt || !body.url) {
+        return new Response(JSON.stringify({ error: 'Faltan campos obligatorios' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const [nueva] = await db
+        .insert(galeria)
+        .values({
+            alt: body.alt,
+            url: body.url,
+            seccion: body.seccion || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nueva), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+============================================
+ARCHIVO: src\pages\api\videos\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { videos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.titulo || !body.url) {
+        return new Response(
+            JSON.stringify({ error: 'Faltan campos obligatorios' }),
+            {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
+    }
+
+    const [nuevo] = await db
+        .insert(videos)
+        .values({
+            titulo: body.titulo,
+            url: body.url,
+            descripcion: body.descripcion || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nuevo), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};

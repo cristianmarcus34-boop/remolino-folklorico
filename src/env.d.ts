@@ -5,6 +5,7 @@ type AuthSession = {
         id: string;
         email: string;
         name: string;
+        role: string; // 👈 agregado
     };
     session: {
         id: string;

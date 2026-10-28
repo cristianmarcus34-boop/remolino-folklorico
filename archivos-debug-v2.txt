@@ -1,0 +1,286 @@
+﻿=== ÁRBOL COMPLETO DE src/pages/api/ ===
+src\pages\api\contacto.js
+src\pages\api\upload-token.js
+src\pages\api\upload.js.bak
+src\pages\api\auth\[...all].js
+src\pages\api\eventos\index.js
+src\pages\api\eventos\[id].js
+src\pages\api\galeria\index.js
+src\pages\api\galeria\[id].js
+src\pages\api\mensajes\[id].js
+src\pages\api\usuarios\index.js
+src\pages\api\usuarios\[id].js
+src\pages\api\videos\index.js
+src\pages\api\videos\upload-token.js
+src\pages\api\videos\[id].js
+
+=== ÁRBOL COMPLETO DE src/pages/admin/ ===
+src\pages\admin\ayuda.astro
+src\pages\admin\galeria.astro
+src\pages\admin\index.astro
+src\pages\admin\mensajes.astro
+src\pages\admin\usuarios.astro
+src\pages\admin\videos.astro
+src\pages\admin\eventos\nuevo.astro
+src\pages\admin\eventos\[id].astro
+src\pages\admin\usuarios\nuevo.astro
+
+=== CONTENIDO DE ARCHIVOS [id] ENCONTRADOS ===
+
+============================================
+ARCHIVO: src\pages\api\eventos\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { eventos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.titulo || !body.lugar || !body.fecha) {
+        return new Response(
+            JSON.stringify({ error: 'Faltan campos obligatorios' }),
+            {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
+    }
+
+    const [nuevo] = await db
+        .insert(eventos)
+        .values({
+            titulo: body.titulo,
+            lugar: body.lugar,
+            fecha: new Date(body.fecha),
+            hora: body.hora || null,
+            imagenUrl: body.imagenUrl || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nuevo), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+============================================
+ARCHIVO: src\pages\api\eventos\[id].js
+============================================
+
+============================================
+ARCHIVO: src\pages\api\galeria\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { galeria } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.alt || !body.url) {
+        return new Response(JSON.stringify({ error: 'Faltan campos obligatorios' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const [nueva] = await db
+        .insert(galeria)
+        .values({
+            alt: body.alt,
+            url: body.url,
+            seccion: body.seccion || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nueva), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+============================================
+ARCHIVO: src\pages\api\galeria\[id].js
+============================================
+
+============================================
+ARCHIVO: src\pages\api\mensajes\[id].js
+============================================
+
+============================================
+ARCHIVO: src\pages\api\usuarios\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { user } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+import { eq } from 'drizzle-orm';
+
+const ROLES_VALIDOS = ['admin', 'editor'];
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return json({ error: 'No autorizado' }, 401);
+    }
+
+    // Verificamos que el que crea sea admin
+    const [usuarioActual] = await db
+        .select()
+        .from(user)
+        .where(eq(user.id, session.user.id));
+
+    if (!usuarioActual || usuarioActual.role !== 'admin') {
+        return json(
+            { error: 'Solo un administrador puede crear usuarios' },
+            403
+        );
+    }
+
+    const body = await request.json();
+
+    if (!body.email || !body.password || !body.name) {
+        return json(
+            { error: 'Faltan campos obligatorios (email, password, name)' },
+            400
+        );
+    }
+
+    if (body.password.length < 8) {
+        return json(
+            { error: 'La contraseÃ±a debe tener al menos 8 caracteres' },
+            400
+        );
+    }
+
+    const role = body.role || 'editor';
+    if (!ROLES_VALIDOS.includes(role)) {
+        return json({ error: 'Rol invÃ¡lido' }, 400);
+    }
+
+    try {
+        // 1. Creamos el usuario (Better Auth hashea la pass + crea user y account)
+        const resultado = await auth.api.signUpEmail({
+            body: {
+                email: body.email,
+                password: body.password,
+                name: body.name,
+            },
+        });
+
+        if (!resultado?.user?.id) {
+            return json({ error: 'No se pudo crear el usuario' }, 500);
+        }
+
+        // 2. âš ï¸ signUpEmail NO persiste el role â†’ UPDATE manual
+        await db
+            .update(user)
+            .set({ role })
+            .where(eq(user.id, resultado.user.id));
+
+        return json(
+            {
+                ok: true,
+                user: {
+                    id: resultado.user.id,
+                    name: resultado.user.name,
+                    email: resultado.user.email,
+                    role,
+                },
+            },
+            201
+        );
+    } catch (error) {
+        console.error('[usuarios] Error al crear usuario:', error);
+        return json(
+            { error: error.message || 'Error al crear el usuario' },
+            400
+        );
+    }
+};
+
+function json(data, status = 200) {
+    return new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+
+============================================
+ARCHIVO: src\pages\api\usuarios\[id].js
+============================================
+
+============================================
+ARCHIVO: src\pages\api\videos\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { videos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.titulo || !body.url) {
+        return new Response(
+            JSON.stringify({ error: 'Faltan campos obligatorios' }),
+            {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
+    }
+
+    const [nuevo] = await db
+        .insert(videos)
+        .values({
+            titulo: body.titulo,
+            url: body.url,
+            descripcion: body.descripcion || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nuevo), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+============================================
+ARCHIVO: src\pages\api\videos\[id].js
+============================================
+
+============================================
+ARCHIVO: src\pages\admin\eventos\[id].astro
+============================================

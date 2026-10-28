@@ -1,0 +1,148 @@
+---
+// Modal de confirmación reutilizable
+---
+
+<div id="confirm-overlay" class="confirm-overlay" style="display: none;">
+    <div class="confirm-box">
+        <h3 class="confirm-title" id="confirm-title">¿Estás seguro?</h3>
+        <p class="confirm-message" id="confirm-message"></p>
+        <div class="confirm-actions">
+            <button
+                type="button"
+                id="confirm-cancel"
+                class="confirm-btn cancel"
+            >
+                Cancelar
+            </button>
+            <button type="button" id="confirm-ok" class="confirm-btn danger">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 1rem;
+    }
+    .confirm-box {
+        background: var(--bg);
+        border: 1px solid rgba(255, 202, 40, 0.3);
+        border-radius: 6px;
+        padding: 2rem;
+        max-width: 420px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        animation: confirmIn 0.2s ease;
+    }
+    @keyframes confirmIn {
+        from {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    .confirm-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+        color: #ffffff;
+    }
+    .confirm-message {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+    .confirm-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.8rem;
+    }
+    .confirm-btn {
+        padding: 0.7rem 1.4rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-family: inherit;
+    }
+    .confirm-btn.cancel {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-muted);
+    }
+    .confirm-btn.cancel:hover {
+        border-color: var(--text-muted);
+        color: var(--text);
+    }
+    .confirm-btn.danger {
+        background: rgba(255, 107, 107, 0.15);
+        border: 1px solid rgba(255, 107, 107, 0.5);
+        color: #ff6b6b;
+    }
+    .confirm-btn.danger:hover {
+        background: rgba(255, 107, 107, 0.25);
+        border-color: #ff6b6b;
+    }
+</style>
+
+<script>
+    // @ts-nocheck
+    window.confirmDialog = function (message, options = {}) {
+        const {
+            title = "¿Estás seguro?",
+            okText = "Eliminar",
+            cancelText = "Cancelar",
+        } = options;
+
+        return new Promise((resolve) => {
+            const overlay = document.getElementById("confirm-overlay");
+            const titleEl = document.getElementById("confirm-title");
+            const msgEl = document.getElementById("confirm-message");
+            const okBtn = document.getElementById("confirm-ok");
+            const cancelBtn = document.getElementById("confirm-cancel");
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            okBtn.textContent = okText;
+            cancelBtn.textContent = cancelText;
+
+            overlay.style.display = "flex";
+
+            const cleanup = (result) => {
+                overlay.style.display = "none";
+                okBtn.removeEventListener("click", onOk);
+                cancelBtn.removeEventListener("click", onCancel);
+                overlay.removeEventListener("click", onOverlay);
+                document.removeEventListener("keydown", onEscape);
+                resolve(result);
+            };
+
+            const onOk = () => cleanup(true);
+            const onCancel = () => cleanup(false);
+            const onOverlay = (e) => {
+                if (e.target === overlay) cleanup(false);
+            };
+            const onEscape = (e) => {
+                if (e.key === "Escape") cleanup(false);
+            };
+
+            okBtn.addEventListener("click", onOk);
+            cancelBtn.addEventListener("click", onCancel);
+            overlay.addEventListener("click", onOverlay);
+            document.addEventListener("keydown", onEscape);
+        });
+    };
+</script>

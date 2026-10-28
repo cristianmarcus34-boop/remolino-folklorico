@@ -141,8 +141,34 @@ const esVideoSubido = (url: string): boolean => {
                 </form>
             </div>
 
+            <!-- Buscador -->
+            <div class="buscador-card">
+                <div class="buscador-input-wrap">
+                    <svg
+                        class="buscador-icon"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input
+                        type="text"
+                        id="search-input"
+                        class="admin-input buscador-input"
+                        placeholder="Buscar por título o descripción..."
+                    />
+                </div>
+            </div>
+
             <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">
-                Videos cargados ({listaVideos.length})
+                Videos cargados (<span id="count-visible"
+                    >{listaVideos.length}</span
+                >/{listaVideos.length})
             </h2>
 
             {
@@ -156,7 +182,15 @@ const esVideoSubido = (url: string): boolean => {
                             const videoId = getYouTubeId(video.url);
                             const esSubido = esVideoSubido(video.url);
                             return (
-                                <div class="video-item">
+                                <div
+                                    class="video-item"
+                                    data-titulo={(
+                                        video.titulo || ""
+                                    ).toLowerCase()}
+                                    data-descripcion={(
+                                        video.descripcion || ""
+                                    ).toLowerCase()}
+                                >
                                     <div class="video-preview">
                                         {esSubido ? (
                                             <video
@@ -188,13 +222,27 @@ const esVideoSubido = (url: string): boolean => {
                                         {video.descripcion && (
                                             <p>{video.descripcion}</p>
                                         )}
-                                        <button
-                                            type="button"
-                                            class="admin-link-btn danger delete-video-btn"
-                                            data-id={video.id}
-                                        >
-                                            Eliminar
-                                        </button>
+                                        <div style="display: flex; gap: 0.3rem; margin-top: 0.5rem;">
+                                            <button
+                                                type="button"
+                                                class="admin-link-btn edit-video-btn"
+                                                data-id={video.id}
+                                                data-titulo={video.titulo}
+                                                data-descripcion={
+                                                    video.descripcion || ""
+                                                }
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="admin-link-btn danger delete-video-btn"
+                                                data-id={video.id}
+                                                data-titulo={video.titulo}
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -205,6 +253,50 @@ const esVideoSubido = (url: string): boolean => {
         </div>
     </section>
 
+    <!-- Modal de edición -->
+    <div id="edit-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <h2 class="modal-title">Editar video</h2>
+            <form id="edit-form">
+                <div class="admin-field">
+                    <label class="admin-label" for="edit-titulo">Título *</label
+                    >
+                    <input
+                        id="edit-titulo"
+                        type="text"
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="edit-descripcion"
+                        >Descripción</label
+                    >
+                    <textarea id="edit-descripcion" rows="3" class="admin-input"
+                    ></textarea>
+                </div>
+                <p
+                    id="edit-error"
+                    class="admin-msg error"
+                    style="display: none;"
+                >
+                </p>
+                <div class="modal-actions">
+                    <button
+                        type="button"
+                        id="edit-cancel"
+                        class="admin-link-btn"
+                    >
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn" id="edit-save">
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <style>
         .imagen-tabs {
             display: flex;
@@ -213,7 +305,7 @@ const esVideoSubido = (url: string): boolean => {
         }
         .imagen-tab {
             background: none;
-            border: 1px solid rgba(233, 30, 99, 0.3); /* Borde fucsia */
+            border: 1px solid rgba(233, 30, 99, 0.3);
             color: var(--text-muted);
             padding: 0.4rem 0.9rem;
             border-radius: 4px;
@@ -226,7 +318,7 @@ const esVideoSubido = (url: string): boolean => {
             color: var(--accent-soft);
         }
         .imagen-tab.active {
-            background: rgba(233, 30, 99, 0.15); /* Fondo fucsia */
+            background: rgba(233, 30, 99, 0.15);
             border-color: var(--accent);
             color: var(--accent);
         }
@@ -236,6 +328,34 @@ const esVideoSubido = (url: string): boolean => {
         .imagen-panel.active {
             display: block;
         }
+
+        /* Buscador */
+        .buscador-card {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .buscador-input-wrap {
+            flex: 1;
+            min-width: 220px;
+            position: relative;
+        }
+        .buscador-icon {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        .buscador-input {
+            padding-left: 2.5rem !important;
+            margin: 0 !important;
+        }
+
+        /* Grid */
         .videos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -243,7 +363,7 @@ const esVideoSubido = (url: string): boolean => {
         }
         .video-item {
             background: var(--bg-soft);
-            border: 1px solid rgba(255, 202, 40, 0.12); /* Borde dorado sutil */
+            border: 1px solid rgba(255, 202, 40, 0.12);
             border-radius: 4px;
             overflow: hidden;
             transition:
@@ -254,7 +374,7 @@ const esVideoSubido = (url: string): boolean => {
         .video-item:hover {
             border-color: rgba(255, 202, 40, 0.4);
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(233, 30, 99, 0.15); /* Resplandor fucsia */
+            box-shadow: 0 10px 30px rgba(233, 30, 99, 0.15);
         }
         .video-preview {
             position: relative;
@@ -287,6 +407,45 @@ const esVideoSubido = (url: string): boolean => {
             color: var(--text-muted);
             font-size: 0.85rem;
             margin-bottom: 0.8rem;
+            white-space: pre-wrap;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 1rem;
+        }
+        .modal-box {
+            background: var(--bg);
+            border: 1px solid rgba(255, 202, 40, 0.3);
+            border-radius: 6px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+        .modal-title {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .modal-actions .admin-link-btn {
+            cursor: pointer;
         }
     </style>
 
@@ -414,7 +573,8 @@ const esVideoSubido = (url: string): boolean => {
                     });
 
                     if (res.ok) {
-                        window.location.reload();
+                        window.showToast("Video agregado", "success");
+                        setTimeout(() => window.location.reload(), 800);
                     } else {
                         const data = await res.json();
                         errorMsg.textContent = data.error || "Error al guardar";
@@ -433,20 +593,160 @@ const esVideoSubido = (url: string): boolean => {
             });
         }
 
+        // ==================
+        // BUSCADOR
+        // ==================
+        const searchInput = document.getElementById("search-input");
+        const countVisible = document.getElementById("count-visible");
+
+        function aplicarFiltros() {
+            const query = searchInput
+                ? searchInput.value.toLowerCase().trim()
+                : "";
+
+            let visibles = 0;
+            document.querySelectorAll(".video-item").forEach((item) => {
+                const titulo = item.getAttribute("data-titulo") || "";
+                const descripcion = item.getAttribute("data-descripcion") || "";
+
+                const coincide =
+                    query === "" ||
+                    titulo.includes(query) ||
+                    descripcion.includes(query);
+
+                item.style.display = coincide ? "" : "none";
+                if (coincide) visibles++;
+            });
+
+            if (countVisible) countVisible.textContent = visibles;
+        }
+
+        if (searchInput) searchInput.addEventListener("input", aplicarFiltros);
+
+        // ==================
+        // ELIMINAR
+        // ==================
         document.querySelectorAll(".delete-video-btn").forEach((btn) => {
             btn.addEventListener("click", async () => {
-                if (!confirm("¿Eliminar este video?")) return;
+                const titulo = btn.getAttribute("data-titulo") || "este video";
+                const ok = await window.confirmDialog(
+                    `¿Eliminar "${titulo}"? No se podrá recuperar.`,
+                    { title: "Eliminar video", okText: "Sí, eliminar" },
+                );
+                if (!ok) return;
+
                 const id = btn.getAttribute("data-id");
-                const res = await fetch(`/api/videos/${id}`, {
-                    method: "DELETE",
-                    credentials: "include",
-                });
-                if (res.ok) {
-                    window.location.reload();
-                } else {
-                    alert("Error al eliminar");
+                try {
+                    const res = await fetch(`/api/videos/${id}`, {
+                        method: "DELETE",
+                        credentials: "include",
+                    });
+                    if (res.ok) {
+                        window.showToast("Video eliminado", "success");
+                        setTimeout(() => window.location.reload(), 800);
+                    } else {
+                        window.showToast("Error al eliminar", "error");
+                    }
+                } catch (err) {
+                    window.showToast("Error de conexión", "error");
                 }
             });
         });
+
+        // ==================
+        // EDITAR (modal)
+        // ==================
+        const editModal = document.getElementById("edit-modal");
+        const editForm = document.getElementById("edit-form");
+        const editTitulo = document.getElementById("edit-titulo");
+        const editDescripcion = document.getElementById("edit-descripcion");
+        const editError = document.getElementById("edit-error");
+        const editSave = document.getElementById("edit-save");
+        const editCancel = document.getElementById("edit-cancel");
+
+        let editVideoId = null;
+
+        document.querySelectorAll(".edit-video-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                editVideoId = btn.getAttribute("data-id");
+                editTitulo.value = btn.getAttribute("data-titulo") || "";
+                editDescripcion.value =
+                    btn.getAttribute("data-descripcion") || "";
+                editError.style.display = "none";
+                editModal.style.display = "flex";
+                editTitulo.focus();
+            });
+        });
+
+        if (editCancel) {
+            editCancel.addEventListener("click", () => {
+                editModal.style.display = "none";
+            });
+        }
+
+        if (editModal) {
+            editModal.addEventListener("click", (e) => {
+                if (e.target === editModal) {
+                    editModal.style.display = "none";
+                }
+            });
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (
+                e.key === "Escape" &&
+                editModal &&
+                editModal.style.display !== "none"
+            ) {
+                editModal.style.display = "none";
+            }
+        });
+
+        if (editForm) {
+            editForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                editError.style.display = "none";
+                editSave.setAttribute("disabled", "true");
+                editSave.textContent = "Guardando...";
+
+                const titulo = editTitulo.value.trim();
+                const descripcion = editDescripcion.value.trim() || null;
+
+                if (titulo.length < 2) {
+                    editError.textContent =
+                        "El título debe tener al menos 2 caracteres";
+                    editError.style.display = "block";
+                    editSave.removeAttribute("disabled");
+                    editSave.textContent = "Guardar cambios";
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`/api/videos/${editVideoId}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ titulo, descripcion }),
+                    });
+
+                    if (res.ok) {
+                        window.showToast("Video actualizado", "success");
+                        setTimeout(() => window.location.reload(), 800);
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        editError.textContent =
+                            data.error || "Error al actualizar";
+                        editError.style.display = "block";
+                        editSave.removeAttribute("disabled");
+                        editSave.textContent = "Guardar cambios";
+                    }
+                } catch (err) {
+                    editError.textContent = "Error de conexión";
+                    editError.style.display = "block";
+                    editSave.removeAttribute("disabled");
+                    editSave.textContent = "Guardar cambios";
+                }
+            });
+        }
     </script>
 </AdminLayout>

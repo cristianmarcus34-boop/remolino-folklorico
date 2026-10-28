@@ -1,0 +1,89 @@
+---
+// Componente de toast reutilizable
+---
+
+<div id="toast-container" class="toast-container"></div>
+
+<style>
+    .toast-container {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        pointer-events: none;
+    }
+    .toast {
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.9rem 1.2rem;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 202, 40, 0.3);
+        color: #fff;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        animation: toastSlideIn 0.3s ease;
+        max-width: 400px;
+    }
+    .toast.toast-success {
+        border-color: rgba(76, 175, 80, 0.5);
+    }
+    .toast.toast-error {
+        border-color: rgba(255, 107, 107, 0.5);
+    }
+    .toast-icon {
+        flex-shrink: 0;
+        font-size: 1.2rem;
+    }
+    @keyframes toastSlideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    @keyframes toastSlideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    .toast.removing {
+        animation: toastSlideOut 0.3s ease forwards;
+    }
+</style>
+
+<script>
+    // @ts-nocheck
+    window.showToast = function (message, type = "success", duration = 3000) {
+        const container = document.getElementById("toast-container");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = `toast toast-${type}`;
+        const icon = type === "success" ? "✅" : "❌";
+        toast.innerHTML = `
+            <span class="toast-icon">${icon}</span>
+            <span>${message}</span>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add("removing");
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    };
+</script>

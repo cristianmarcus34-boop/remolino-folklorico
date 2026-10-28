@@ -1,0 +1,471 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { db } from "../../db/index.js";
+import { user } from "../../db/schema.js";
+import { desc, eq } from "drizzle-orm";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) return Astro.redirect("/login");
+
+const [usuarioActual] = await db
+    .select()
+    .from(user)
+    .where(eq(user.id, session.user.id));
+
+if (!usuarioActual || usuarioActual.role !== "admin") {
+    return Astro.redirect("/admin");
+}
+
+const listaUsuarios = await db
+    .select()
+    .from(user)
+    .orderBy(desc(user.createdAt));
+---
+
+<AdminLayout title="Usuarios | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container" style="max-width: 800px;">
+            <h1 class="admin-page-title">Usuarios del panel</h1>
+            <p class="admin-page-subtitle">
+                Creá y gestioná las cuentas que pueden acceder al panel de
+                administración.
+            </p>
+
+            <div class="admin-card" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.1rem; margin-bottom: 1.2rem;">
+                    Crear nuevo usuario
+                </h2>
+                <form id="usuario-form">
+                    <div class="admin-field">
+                        <label class="admin-label" for="nombre">Nombre *</label>
+                        <input
+                            id="nombre"
+                            type="text"
+                            required
+                            minlength="2"
+                            class="admin-input"
+                            placeholder="Ej: Tatiana Marcus"
+                            autocomplete="off"
+                        />
+                    </div>
+                    <div class="admin-field">
+                        <label class="admin-label" for="email">Email *</label>
+                        <input
+                            id="email"
+                            type="email"
+                            required
+                            class="admin-input"
+                            placeholder="tatiana@email.com"
+                            autocomplete="off"
+                        />
+                    </div>
+                    <div class="admin-field">
+                        <label class="admin-label" for="password"
+                            >Contraseña temporal *</label
+                        >
+                        <input
+                            id="password"
+                            type="text"
+                            required
+                            minlength="8"
+                            class="admin-input"
+                            placeholder="Mínimo 8 caracteres"
+                            autocomplete="new-password"
+                        />
+                        <p
+                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                        >
+                            Pasale esta contraseña a la persona. Puede cambiarla
+                            después.
+                        </p>
+                    </div>
+                    <div class="admin-field">
+                        <label class="admin-label" for="role">Rol *</label>
+                        <select id="role" required class="admin-input">
+                            <option value="editor"
+                                >Editor (solo contenido)</option
+                            >
+                            <option value="admin"
+                                >Administrador (acceso total)</option
+                            >
+                        </select>
+                    </div>
+                    <div class="admin-actions">
+                        <button type="submit" class="btn" id="submit-btn"
+                            >Crear usuario</button
+                        >
+                    </div>
+                    <p
+                        id="error-msg"
+                        class="admin-msg error"
+                        style="display: none;"
+                    >
+                    </p>
+                </form>
+            </div>
+
+            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">
+                Usuarios activos ({listaUsuarios.length})
+            </h2>
+
+            <div class="usuarios-grid">
+                {
+                    listaUsuarios.map((u) => (
+                        <div class="admin-card usuario-card">
+                            <div class="usuario-info">
+                                <div class="usuario-avatar">
+                                    {u.name
+                                        ? u.name.charAt(0).toUpperCase()
+                                        : "?"}
+                                </div>
+                                <div>
+                                    <h3>
+                                        {u.name || "Sin nombre"}
+                                        <span
+                                            class={`usuario-rol-badge rol-${u.role}`}
+                                        >
+                                            {u.role === "admin"
+                                                ? "Admin"
+                                                : "Editor"}
+                                        </span>
+                                    </h3>
+                                    <p>{u.email}</p>
+                                    <p class="usuario-fecha">
+                                        Creado el{" "}
+                                        {new Date(
+                                            u.createdAt,
+                                        ).toLocaleDateString("es-AR")}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="usuario-actions">
+                                {session.user.id === u.id ? (
+                                    <span class="usuario-badge">Vos</span>
+                                ) : (
+                                    <>
+                                        <select
+                                            class="admin-input role-select"
+                                            data-id={u.id}
+                                            data-role-actual={u.role}
+                                            title="Cambiar rol"
+                                        >
+                                            <option
+                                                value="editor"
+                                                selected={u.role === "editor"}
+                                            >
+                                                Editor
+                                            </option>
+                                            <option
+                                                value="admin"
+                                                selected={u.role === "admin"}
+                                            >
+                                                Admin
+                                            </option>
+                                        </select>
+                                        <button
+                                            type="button"
+                                            class="admin-link-btn danger delete-user-btn"
+                                            data-id={u.id}
+                                            data-name={u.name}
+                                            data-email={u.email}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                }
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // @ts-nocheck
+        const form = document.getElementById("usuario-form");
+        const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+
+        // ==================
+        // VALIDACIONES HELPERS
+        // ==================
+        const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        function mostrarError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = "block";
+        }
+
+        function limpiarError() {
+            errorMsg.style.display = "none";
+            errorMsg.textContent = "";
+        }
+
+        // ==================
+        // CREAR USUARIO
+        // ==================
+        if (form && errorMsg && submitBtn) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                limpiarError();
+
+                const nombre =
+                    document.getElementById("nombre")?.value.trim() || "";
+                const email =
+                    document.getElementById("email")?.value.trim() || "";
+                const password =
+                    document.getElementById("password")?.value || "";
+                const role = document.getElementById("role")?.value || "editor";
+
+                if (nombre.length < 2) {
+                    mostrarError("El nombre debe tener al menos 2 caracteres");
+                    return;
+                }
+                if (!EMAIL_REGEX.test(email)) {
+                    mostrarError("El email no es válido");
+                    return;
+                }
+                if (password.length < 8) {
+                    mostrarError(
+                        "La contraseña debe tener al menos 8 caracteres",
+                    );
+                    return;
+                }
+                if (!["admin", "editor"].includes(role)) {
+                    mostrarError("Rol inválido");
+                    return;
+                }
+
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.textContent = "Creando...";
+
+                try {
+                    const res = await fetch("/api/usuarios", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            name: nombre,
+                            email,
+                            password,
+                            role,
+                        }),
+                    });
+
+                    if (res.ok) {
+                        window.showToast(
+                            `Usuario ${email} creado como ${role}`,
+                            "success",
+                        );
+                        form.reset();
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        mostrarError(data.error || "Error al crear el usuario");
+                        window.showToast(
+                            data.error || "Error al crear el usuario",
+                            "error",
+                        );
+                    }
+                } catch (err) {
+                    mostrarError("Error de conexión");
+                    window.showToast("Error de conexión", "error");
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.textContent = "Crear usuario";
+                }
+            });
+        }
+
+        // ==================
+        // CAMBIAR ROL (dropdown inline)
+        // ==================
+        document.querySelectorAll(".role-select").forEach((sel) => {
+            sel.addEventListener("change", async () => {
+                const id = sel.getAttribute("data-id");
+                const rolActual = sel.getAttribute("data-role-actual");
+                const nuevoRol = sel.value;
+
+                if (nuevoRol === rolActual) return;
+
+                sel.setAttribute("disabled", "true");
+
+                try {
+                    const res = await fetch(`/api/usuarios/${id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ role: nuevoRol }),
+                    });
+
+                    if (res.ok) {
+                        window.showToast(
+                            `Rol cambiado a ${nuevoRol === "admin" ? "Administrador" : "Editor"}`,
+                            "success",
+                        );
+                        setTimeout(() => window.location.reload(), 900);
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        window.showToast(
+                            data.error || "Error al cambiar el rol",
+                            "error",
+                        );
+                        // Revertir el select al valor original
+                        sel.value = rolActual;
+                        sel.removeAttribute("disabled");
+                    }
+                } catch (err) {
+                    window.showToast("Error de conexión", "error");
+                    sel.value = rolActual;
+                    sel.removeAttribute("disabled");
+                }
+            });
+        });
+
+        // ==================
+        // ELIMINAR USUARIO
+        // ==================
+        document.querySelectorAll(".delete-user-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const nombre = btn.getAttribute("data-name") || "este usuario";
+                const email = btn.getAttribute("data-email") || "";
+
+                const ok = await window.confirmDialog(
+                    `¿Eliminar a ${nombre}${email ? ` (${email})` : ""}? No podrá volver a acceder al panel.`,
+                    { title: "Eliminar usuario", okText: "Sí, eliminar" },
+                );
+                if (!ok) return;
+
+                const id = btn.getAttribute("data-id");
+                btn.setAttribute("disabled", "true");
+
+                try {
+                    const res = await fetch(`/api/usuarios/${id}`, {
+                        method: "DELETE",
+                        credentials: "include",
+                    });
+                    if (res.ok) {
+                        window.showToast("Usuario eliminado", "success");
+                        setTimeout(() => window.location.reload(), 800);
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        window.showToast(
+                            data.error || "Error al eliminar",
+                            "error",
+                        );
+                        btn.removeAttribute("disabled");
+                    }
+                } catch (err) {
+                    window.showToast("Error de conexión", "error");
+                    btn.removeAttribute("disabled");
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .usuarios-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .usuario-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.2rem 1.5rem;
+            transition: border-color 0.2s ease;
+        }
+        .usuario-card:hover {
+            border-color: rgba(255, 202, 40, 0.3);
+        }
+        .usuario-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .usuario-avatar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(233, 30, 99, 0.15);
+            border: 1px solid rgba(233, 30, 99, 0.3);
+            color: var(--accent);
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .usuario-info h3 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .usuario-info p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        .usuario-fecha {
+            font-size: 0.75rem !important;
+            opacity: 0.6;
+            margin-top: 0.2rem;
+        }
+        .usuario-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
+            background: rgba(255, 202, 40, 0.15);
+            color: var(--accent-soft);
+        }
+        .usuario-rol-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 2px;
+            font-weight: 500;
+        }
+        .usuario-rol-badge.rol-admin {
+            background: rgba(233, 30, 99, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(233, 30, 99, 0.3);
+        }
+        .usuario-rol-badge.rol-editor {
+            background: rgba(255, 202, 40, 0.12);
+            color: var(--accent-soft);
+            border: 1px solid rgba(255, 202, 40, 0.25);
+        }
+        .usuario-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .role-select {
+            padding: 0.4rem 0.7rem !important;
+            font-size: 0.8rem;
+            width: auto !important;
+            min-width: 110px;
+            margin: 0 !important;
+            cursor: pointer;
+        }
+        .role-select:disabled {
+            opacity: 0.5;
+            cursor: wait;
+        }
+    </style>
+</AdminLayout>

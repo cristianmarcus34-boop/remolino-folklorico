@@ -1,0 +1,2110 @@
+﻿=== ARCHIVOS ===
+
+============================================
+ARCHIVO: src\pages\api\eventos\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { eventos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.titulo || !body.lugar || !body.fecha) {
+        return new Response(
+            JSON.stringify({ error: 'Faltan campos obligatorios' }),
+            {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
+    }
+
+    const [nuevo] = await db
+        .insert(eventos)
+        .values({
+            titulo: body.titulo,
+            lugar: body.lugar,
+            fecha: new Date(body.fecha),
+            hora: body.hora || null,
+            imagenUrl: body.imagenUrl || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nuevo), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+============================================
+ARCHIVO: src\pages\api\eventos\[id].js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { eventos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+import { eq } from 'drizzle-orm';
+
+export const PUT = async ({ request, params }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    const [actualizado] = await db
+        .update(eventos)
+        .set({
+            titulo: body.titulo,
+            lugar: body.lugar,
+            fecha: new Date(body.fecha),
+            hora: body.hora || null,
+            imagenUrl: body.imagenUrl || null,
+        })
+        .where(eq(eventos.id, Number(params.id)))
+        .returning();
+
+    if (!actualizado) {
+        return new Response(JSON.stringify({ error: 'Evento no encontrado' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    return new Response(JSON.stringify(actualizado), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+export const DELETE = async ({ request, params }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    await db.delete(eventos).where(eq(eventos.id, Number(params.id)));
+
+    return new Response(null, { status: 204 });
+};
+
+============================================
+ARCHIVO: src\pages\api\galeria\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { galeria } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.alt || !body.url) {
+        return new Response(JSON.stringify({ error: 'Faltan campos obligatorios' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const [nueva] = await db
+        .insert(galeria)
+        .values({
+            alt: body.alt,
+            url: body.url,
+            seccion: body.seccion || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nueva), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+============================================
+ARCHIVO: src\pages\api\galeria\[id].js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { galeria } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+import { del } from '@vercel/blob';
+import { eq } from 'drizzle-orm';
+
+export const PATCH = async ({ request, params }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+    const id = Number(params.id);
+
+    const [actualizada] = await db
+        .update(galeria)
+        .set({ seccion: body.seccion || null })
+        .where(eq(galeria.id, id))
+        .returning();
+
+    if (!actualizada) {
+        return new Response(JSON.stringify({ error: 'Imagen no encontrada' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    return new Response(JSON.stringify(actualizada), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+export const DELETE = async ({ request, params }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const id = Number(params.id);
+    const [item] = await db.select().from(galeria).where(eq(galeria.id, id));
+
+    if (!item) {
+        return new Response(JSON.stringify({ error: 'Imagen no encontrada' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    try {
+        await del(item.url);
+    } catch (err) {
+        console.error('Error al borrar de Blob:', err);
+    }
+
+    await db.delete(galeria).where(eq(galeria.id, id));
+
+    return new Response(null, { status: 204 });
+};
+
+============================================
+ARCHIVO: src\pages\api\mensajes\[id].js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { mensajes } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+import { eq } from 'drizzle-orm';
+
+export const PATCH = async ({ request, params }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+    const id = Number(params.id);
+
+    const [actualizado] = await db
+        .update(mensajes)
+        .set({ leido: body.leido ?? true })
+        .where(eq(mensajes.id, id))
+        .returning();
+
+    if (!actualizado) {
+        return new Response(JSON.stringify({ error: 'Mensaje no encontrado' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    return new Response(JSON.stringify(actualizado), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+export const DELETE = async ({ request, params }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    await db.delete(mensajes).where(eq(mensajes.id, Number(params.id)));
+
+    return new Response(null, { status: 204 });
+};
+
+============================================
+ARCHIVO: src\pages\api\usuarios\[id].js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { user } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+import { eq } from 'drizzle-orm';
+
+const ROLES_VALIDOS = ['admin', 'editor'];
+
+function json(data, status = 200) {
+    return new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+
+async function getAdminSession(request) {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) return { error: json({ error: 'No autorizado' }, 401) };
+
+    const [usuarioActual] = await db
+        .select()
+        .from(user)
+        .where(eq(user.id, session.user.id));
+
+    if (!usuarioActual || usuarioActual.role !== 'admin') {
+        return {
+            error: json(
+                { error: 'Solo un administrador puede hacer esto' },
+                403
+            ),
+        };
+    }
+
+    return { session, usuarioActual };
+}
+
+// ============================
+// PATCH: cambiar rol (o nombre)
+// ============================
+export const PATCH = async ({ request, params }) => {
+    const authz = await getAdminSession(request);
+    if (authz.error) return authz.error;
+
+    const id = params.id;
+    const body = await request.json().catch(() => null);
+    if (!body) return json({ error: 'JSON inválido' }, 400);
+
+    const updates = {};
+
+    if (body.name) {
+        if (typeof body.name !== 'string' || body.name.trim().length < 2) {
+            return json({ error: 'Nombre inválido' }, 400);
+        }
+        updates.name = body.name.trim();
+    }
+
+    if (body.role) {
+        if (!ROLES_VALIDOS.includes(body.role)) {
+            return json({ error: 'Rol inválido' }, 400);
+        }
+        // No permitir que un admin se quite a sí mismo el rol
+        if (id === authz.session.user.id && body.role !== 'admin') {
+            return json(
+                { error: 'No podés quitarte el rol admin a vos mismo' },
+                400
+            );
+        }
+        updates.role = body.role;
+    }
+
+    if (Object.keys(updates).length === 0) {
+        return json({ error: 'Nada para actualizar' }, 400);
+    }
+
+    try {
+        const [updated] = await db
+            .update(user)
+            .set(updates)
+            .where(eq(user.id, id))
+            .returning();
+
+        if (!updated) return json({ error: 'Usuario no encontrado' }, 404);
+
+        return json({ ok: true, user: updated });
+    } catch (error) {
+        console.error('[usuarios] Error al editar:', error);
+        return json({ error: 'Error al editar el usuario' }, 500);
+    }
+};
+
+// ============================
+// DELETE: eliminar usuario
+// ============================
+export const DELETE = async ({ request, params }) => {
+    const authz = await getAdminSession(request);
+    if (authz.error) return authz.error;
+
+    const id = params.id;
+
+    if (authz.session.user.id === id) {
+        return json({ error: 'No podés eliminar tu propio usuario' }, 400);
+    }
+
+    // No permitir quedarse sin admins
+    const admins = await db
+        .select({ id: user.id })
+        .from(user)
+        .where(eq(user.role, 'admin'));
+
+    const [target] = await db.select().from(user).where(eq(user.id, id));
+    if (!target) return json({ error: 'Usuario no encontrado' }, 404);
+
+    if (target.role === 'admin' && admins.length <= 1) {
+        return json({ error: 'No podés eliminar al último admin' }, 400);
+    }
+
+    try {
+        await db.delete(user).where(eq(user.id, id));
+        return new Response(null, { status: 204 });
+    } catch (error) {
+        console.error('[usuarios] Error al eliminar usuario:', error);
+        return json({ error: 'Error al eliminar el usuario' }, 500);
+    }
+};
+
+============================================
+ARCHIVO: src\pages\api\videos\index.js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { videos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const body = await request.json();
+
+    if (!body.titulo || !body.url) {
+        return new Response(
+            JSON.stringify({ error: 'Faltan campos obligatorios' }),
+            {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
+    }
+
+    const [nuevo] = await db
+        .insert(videos)
+        .values({
+            titulo: body.titulo,
+            url: body.url,
+            descripcion: body.descripcion || null,
+        })
+        .returning();
+
+    return new Response(JSON.stringify(nuevo), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+============================================
+ARCHIVO: src\pages\api\videos\upload-token.js
+============================================
+export const prerender = false;
+
+import { handleUpload } from '@vercel/blob/client';
+import { auth } from '@/lib/auth.js';
+
+export const POST = async ({ request }) => {
+    if (!import.meta.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_READ_WRITE_TOKEN) {
+        console.error('[videos/upload-token] ERROR: BLOB_READ_WRITE_TOKEN no está definido en el entorno.');
+        return new Response(
+            JSON.stringify({ error: 'Configuración del servidor incompleta (falta token de Blob)' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+    }
+
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        console.warn('[videos/upload-token] Intento de subida sin sesión válida.');
+        return new Response(
+            JSON.stringify({ error: 'No autorizado' }),
+            { status: 401, headers: { 'Content-Type': 'application/json' } }
+        );
+    }
+
+    let body;
+    try {
+        body = await request.json();
+    } catch (parseError) {
+        console.error('[videos/upload-token] Error al parsear el body de la petición:', parseError);
+        return new Response(
+            JSON.stringify({ error: 'Petición inválida' }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+    }
+
+    try {
+        const jsonResponse = await handleUpload({
+            body,
+            request,
+            token: import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN,
+            onBeforeGenerateToken: async (pathname) => {
+                return {
+                    allowedContentTypes: ['video/mp4', 'video/webm', 'video/ogg'],
+                    maximumSizeInBytes: 500 * 1024 * 1024,
+                    validUntil: Date.now() + 5 * 60 * 1000,
+                };
+            },
+            onUploadCompleted: async ({ blob }) => {
+                console.log('[videos/upload-token] Video subido:', blob.url);
+            },
+        });
+
+        return new Response(JSON.stringify(jsonResponse), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    } catch (error) {
+        console.error('[videos/upload-token] Error en handleUpload:', error);
+        return new Response(
+            JSON.stringify({ error: error.message || 'Error interno al generar el token' }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+    }
+};
+
+============================================
+ARCHIVO: src\pages\api\videos\[id].js
+============================================
+export const prerender = false;
+
+import { db } from '@/db/index.js';
+import { videos } from '@/db/schema.js';
+import { auth } from '@/lib/auth.js';
+import { eq } from 'drizzle-orm';
+
+export const DELETE = async ({ request, params }) => {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    await db.delete(videos).where(eq(videos.id, Number(params.id)));
+
+    return new Response(null, { status: 204 });
+};
+
+============================================
+ARCHIVO: src\pages\admin\galeria.astro
+============================================
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { db } from "../../db/index.js";
+import { galeria } from "../../db/schema.js";
+import { desc } from "drizzle-orm";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+    return Astro.redirect("/login");
+}
+
+const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
+---
+
+<AdminLayout title="Galería | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container">
+            <h1 class="admin-page-title">Galería</h1>
+            <p class="admin-page-subtitle">
+                Subí y gestioná las fotos del grupo.
+            </p>
+
+            <div class="admin-card" style="margin-bottom: 2.5rem;">
+                <form id="upload-form">
+                    <div id="dropzone" class="dropzone">
+                        <input
+                            type="file"
+                            name="file"
+                            accept="image/*"
+                            required
+                            id="file-input"
+                            hidden
+                        />
+                        <div id="dropzone-content">
+                            <svg
+                                width="32"
+                                height="32"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                style="color: var(--accent-soft); margin-bottom: 0.8rem;"
+                            >
+                                <path
+                                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                                ></path>
+                            </svg>
+                            <p style="margin-bottom: 0.3rem;">
+                                Arrastrá una imagen o hacé clic para seleccionar
+                            </p>
+                            <p
+                                style="font-size: 0.8rem; color: var(--text-muted);"
+                            >
+                                JPG, PNG o WebP · máx 10 MB
+                            </p>
+                        </div>
+                        <img
+                            id="preview"
+                            style="display: none; max-width: 100%; max-height: 300px; border-radius: 2px;"
+                        />
+                    </div>
+
+                    <div class="admin-field" style="margin-top: 1.2rem;">
+                        <label class="admin-label" for="alt"
+                            >Descripción (alt) *</label
+                        >
+                        <input
+                            id="alt"
+                            type="text"
+                            name="alt"
+                            required
+                            class="admin-input"
+                            placeholder="Ej: Presentación en el Teatro Provincial"
+                        />
+                    </div>
+
+                    <div class="admin-field">
+                        <label class="admin-label" for="seccion"
+                            >¿Dónde se muestra?</label
+                        >
+                        <select id="seccion" name="seccion" class="admin-input">
+                            <option value=""
+                                >Solo en la galería (sin destacar)</option
+                            >
+                            <option value="galeria_destacada"
+                                >Destacada en Galería (grande)</option
+                            >
+                            <option value="nosotros"
+                                >Foto principal en Nosotros</option
+                            >
+                            <option value="inicio">Imagen en el Inicio</option>
+                            <option value="eventos">Imagen en Eventos</option>
+                        </select>
+                    </div>
+
+                    <div class="admin-actions">
+                        <button type="submit" class="btn" id="submit-btn"
+                            >Subir imagen</button
+                        >
+                        <span
+                            id="status-msg"
+                            style="font-size: 0.85rem; color: var(--text-muted);"
+                        ></span>
+                    </div>
+                    <p
+                        id="error-msg"
+                        class="admin-msg error"
+                        style="display: none;"
+                    >
+                    </p>
+                </form>
+            </div>
+
+            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">
+                Imágenes cargadas ({imagenes.length})
+            </h2>
+
+            {
+                imagenes.length === 0 ? (
+                    <p style="color: var(--text-muted);">
+                        No hay imágenes en la galería todavía.
+                    </p>
+                ) : (
+                    <div class="galeria-grid">
+                        {imagenes.map((img) => (
+                            <div class="galeria-item">
+                                <img
+                                    src={img.url}
+                                    alt={img.alt}
+                                    loading="lazy"
+                                />
+                                <div class="galeria-info">
+                                    <div style="flex: 1; min-width: 0;">
+                                        <p
+                                            title={img.alt}
+                                            style="margin: 0 0 0.4rem 0;"
+                                        >
+                                            {img.alt}
+                                        </p>
+                                        <select
+                                            class="seccion-select"
+                                            data-id={img.id}
+                                            style="width: 100%; padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid rgba(255,202,40,0.2); color: var(--text); border-radius: 2px; font-size: 0.75rem;"
+                                        >
+                                            <option
+                                                value=""
+                                                selected={!img.seccion}
+                                            >
+                                                Solo galería
+                                            </option>
+                                            <option
+                                                value="galeria_destacada"
+                                                selected={
+                                                    img.seccion ===
+                                                    "galeria_destacada"
+                                                }
+                                            >
+                                                Destacada en Galería
+                                            </option>
+                                            <option
+                                                value="nosotros"
+                                                selected={
+                                                    img.seccion === "nosotros"
+                                                }
+                                            >
+                                                Nosotros
+                                            </option>
+                                            <option
+                                                value="inicio"
+                                                selected={
+                                                    img.seccion === "inicio"
+                                                }
+                                            >
+                                                Inicio
+                                            </option>
+                                            <option
+                                                value="eventos"
+                                                selected={
+                                                    img.seccion === "eventos"
+                                                }
+                                            >
+                                                Eventos
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="admin-link-btn danger delete-img-btn"
+                                        data-id={img.id}
+                                    >
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )
+            }
+        </div>
+    </section>
+
+    <style>
+        .dropzone {
+            border: 2px dashed rgba(233, 30, 99, 0.3);
+            border-radius: 4px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition:
+                border-color 0.2s,
+                background 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+        }
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: var(--accent-soft);
+            background: rgba(233, 30, 99, 0.05);
+        }
+        .galeria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .galeria-item {
+            background: var(--bg-soft);
+            border: 1px solid rgba(255, 202, 40, 0.12);
+            border-radius: 4px;
+            overflow: hidden;
+            transition:
+                border-color 0.2s,
+                transform 0.2s;
+        }
+        .galeria-item:hover {
+            border-color: rgba(255, 202, 40, 0.4);
+            transform: translateY(-2px);
+        }
+        .galeria-item img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            display: block;
+        }
+        .galeria-info {
+            padding: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .galeria-info p {
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .seccion-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 2px;
+            background: rgba(255, 202, 40, 0.15);
+            color: var(--accent-soft);
+        }
+    </style>
+
+    <script>
+        // @ts-nocheck
+        import { upload } from "@vercel/blob/client";
+
+        const form = document.getElementById("upload-form");
+        const fileInput = document.getElementById("file-input");
+        const dropzone = document.getElementById("dropzone");
+        const dropzoneContent = document.getElementById("dropzone-content");
+        const preview = document.getElementById("preview");
+        const submitBtn = document.getElementById("submit-btn");
+        const statusMsg = document.getElementById("status-msg");
+        const errorMsg = document.getElementById("error-msg");
+
+        if (dropzone && fileInput) {
+            dropzone.addEventListener("click", () => fileInput.click());
+
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("dragover");
+            });
+
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("dragover");
+            });
+
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("dragover");
+                if (e.dataTransfer && e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    showPreview();
+                }
+            });
+
+            fileInput.addEventListener("change", showPreview);
+        }
+
+        function showPreview() {
+            if (!fileInput || !fileInput.files) return;
+            const filesArray = Array.from(fileInput.files);
+            const file = filesArray.length > 0 ? filesArray[0] : null;
+            if (!file || !preview || !dropzoneContent) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = String(e.target ? e.target.result : "");
+                preview.style.display = "block";
+                dropzoneContent.style.display = "none";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        if (form && submitBtn && statusMsg && errorMsg && fileInput) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                statusMsg.textContent = "Subiendo...";
+                submitBtn.setAttribute("disabled", "true");
+
+                let file = null;
+                if (fileInput.files && fileInput.files.length > 0) {
+                    const filesArray = Array.from(fileInput.files);
+                    file = filesArray[0];
+                }
+
+                const altInput = document.getElementById("alt");
+                const seccionSelect = document.getElementById("seccion");
+                const alt =
+                    altInput && "value" in altInput ? altInput.value : "";
+                const seccion =
+                    seccionSelect && "value" in seccionSelect
+                        ? seccionSelect.value
+                        : null;
+
+                if (!file) {
+                    errorMsg.textContent = "Seleccioná una imagen";
+                    errorMsg.style.display = "block";
+                    submitBtn.removeAttribute("disabled");
+                    return;
+                }
+
+                try {
+                    // Subida directa a Vercel Blob
+                    const blob = await upload(file.name, file, {
+                        access: "public",
+                        handleUploadUrl: "/api/upload-token",
+                    });
+
+                    const url = blob.url;
+
+                    // Guardar en la base de datos
+                    const saveRes = await fetch("/api/galeria", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ alt, url, seccion }),
+                    });
+
+                    if (!saveRes.ok) {
+                        const data = await saveRes.json();
+                        throw new Error(
+                            data.error || "Error al guardar en la base",
+                        );
+                    }
+
+                    window.location.reload();
+                } catch (err) {
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
+                    errorMsg.style.display = "block";
+                    statusMsg.textContent = "";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                }
+            });
+        }
+
+        document.querySelectorAll(".delete-img-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                if (!confirm("¿Eliminar esta imagen?")) return;
+                const id = btn.getAttribute("data-id");
+                const res = await fetch(`/api/galeria/${id}`, {
+                    method: "DELETE",
+                    credentials: "include",
+                });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error al eliminar");
+                }
+            });
+        });
+
+        document.querySelectorAll(".seccion-select").forEach((sel) => {
+            sel.addEventListener("change", async () => {
+                if (!("value" in sel)) return;
+                const id = sel.getAttribute("data-id");
+                const seccion = sel.value || null;
+                try {
+                    const res = await fetch(`/api/galeria/${id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ seccion }),
+                    });
+                    if (!res.ok) {
+                        alert("Error al actualizar la sección");
+                        window.location.reload();
+                    }
+                } catch (err) {
+                    alert("Error de conexión");
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+</AdminLayout>
+
+
+============================================
+ARCHIVO: src\pages\admin\videos.astro
+============================================
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { db } from "../../db/index.js";
+import { videos } from "../../db/schema.js";
+import { desc } from "drizzle-orm";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+    return Astro.redirect("/login");
+}
+
+const listaVideos = await db.select().from(videos).orderBy(desc(videos.id));
+
+const getYouTubeId = (url: string): string | null => {
+    if (!url) return null;
+    const match = url.match(
+        /(?:youtube\.com\/watch\?v=|music\.youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return match ? match[1] : null;
+};
+
+const esVideoSubido = (url: string): boolean => {
+    return url.includes(".public.blob.vercel-storage.com");
+};
+---
+
+<AdminLayout title="Videos | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title">Videos</h1>
+                    <p class="admin-page-subtitle">
+                        Subí videos desde tu dispositivo o agregá URLs de
+                        YouTube.
+                    </p>
+                </div>
+            </div>
+
+            <div class="admin-card" style="margin-bottom: 2.5rem;">
+                <form id="video-form">
+                    <div class="admin-field">
+                        <label class="admin-label" for="titulo">Título *</label>
+                        <input
+                            id="titulo"
+                            type="text"
+                            name="titulo"
+                            required
+                            class="admin-input"
+                            placeholder="Ej: Presentación en el Teatro Provincial"
+                        />
+                    </div>
+
+                    <div class="admin-field">
+                        <label class="admin-label">Origen del video</label>
+                        <div class="imagen-tabs">
+                            <button
+                                type="button"
+                                class="imagen-tab active"
+                                data-tab="archivo">Subir archivo</button
+                            >
+                            <button
+                                type="button"
+                                class="imagen-tab"
+                                data-tab="youtube">URL de YouTube</button
+                            >
+                        </div>
+
+                        <div class="imagen-panel active" data-panel="archivo">
+                            <input
+                                type="file"
+                                id="videoFile"
+                                accept="video/mp4,video/webm,video/ogg"
+                                class="admin-input"
+                                style="padding: 0.5rem;"
+                            />
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                            >
+                                MP4, WebM u OGG · máx 500 MB.
+                            </p>
+                            <div
+                                id="preview-container"
+                                style="display: none; margin-top: 0.8rem;"
+                            >
+                                <video
+                                    id="preview"
+                                    controls
+                                    style="max-width: 100%; max-height: 200px; border-radius: 4px; border: 1px solid rgba(255, 202, 40, 0.3);"
+                                ></video>
+                            </div>
+                        </div>
+
+                        <div class="imagen-panel" data-panel="youtube">
+                            <input
+                                id="url"
+                                type="url"
+                                name="url"
+                                class="admin-input"
+                                placeholder="https://www.youtube.com/watch?v=..."
+                            />
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                            >
+                                Pegá la URL del video de YouTube (watch, shorts,
+                                youtu.be o YouTube Music).
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="admin-field">
+                        <label class="admin-label" for="descripcion"
+                            >Descripción</label
+                        >
+                        <textarea
+                            id="descripcion"
+                            name="descripcion"
+                            rows="2"
+                            class="admin-input"
+                            placeholder="Breve descripción del video (opcional)"
+                        ></textarea>
+                    </div>
+
+                    <div class="admin-actions">
+                        <button type="submit" class="btn" id="submit-btn"
+                            >Agregar video</button
+                        >
+                        <span
+                            id="status-msg"
+                            style="font-size: 0.85rem; color: var(--text-muted);"
+                        ></span>
+                    </div>
+                    <p
+                        id="error-msg"
+                        class="admin-msg error"
+                        style="display: none;"
+                    >
+                    </p>
+                </form>
+            </div>
+
+            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">
+                Videos cargados ({listaVideos.length})
+            </h2>
+
+            {
+                listaVideos.length === 0 ? (
+                    <p style="color: var(--text-muted);">
+                        No hay videos cargados todavía.
+                    </p>
+                ) : (
+                    <div class="videos-grid">
+                        {listaVideos.map((video) => {
+                            const videoId = getYouTubeId(video.url);
+                            const esSubido = esVideoSubido(video.url);
+                            return (
+                                <div class="video-item">
+                                    <div class="video-preview">
+                                        {esSubido ? (
+                                            <video
+                                                controls
+                                                style="width: 100%; height: 100%; display: block;"
+                                            >
+                                                <source
+                                                    src={video.url}
+                                                    type="video/mp4"
+                                                />
+                                            </video>
+                                        ) : videoId ? (
+                                            <iframe
+                                                src={`https://www.youtube.com/embed/${videoId}`}
+                                                title={video.titulo}
+                                                frameborder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowfullscreen
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div class="video-invalid">
+                                                URL inválida
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div class="video-info">
+                                        <h3>{video.titulo}</h3>
+                                        {video.descripcion && (
+                                            <p>{video.descripcion}</p>
+                                        )}
+                                        <button
+                                            type="button"
+                                            class="admin-link-btn danger delete-video-btn"
+                                            data-id={video.id}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )
+            }
+        </div>
+    </section>
+
+    <style>
+        .imagen-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .imagen-tab {
+            background: none;
+            border: 1px solid rgba(233, 30, 99, 0.3); /* Borde fucsia */
+            color: var(--text-muted);
+            padding: 0.4rem 0.9rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .imagen-tab:hover {
+            border-color: var(--accent-soft);
+            color: var(--accent-soft);
+        }
+        .imagen-tab.active {
+            background: rgba(233, 30, 99, 0.15); /* Fondo fucsia */
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .imagen-panel {
+            display: none;
+        }
+        .imagen-panel.active {
+            display: block;
+        }
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .video-item {
+            background: var(--bg-soft);
+            border: 1px solid rgba(255, 202, 40, 0.12); /* Borde dorado sutil */
+            border-radius: 4px;
+            overflow: hidden;
+            transition:
+                border-color 0.2s,
+                transform 0.2s,
+                box-shadow 0.2s;
+        }
+        .video-item:hover {
+            border-color: rgba(255, 202, 40, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(233, 30, 99, 0.15); /* Resplandor fucsia */
+        }
+        .video-preview {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background: #000;
+        }
+        .video-preview iframe,
+        .video-preview video {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .video-invalid {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e74c3c;
+            font-size: 0.85rem;
+        }
+        .video-info {
+            padding: 1rem;
+        }
+        .video-info h3 {
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+        }
+        .video-info p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+        }
+    </style>
+
+    <script>
+        // @ts-nocheck
+        import { upload } from "@vercel/blob/client";
+
+        const form = document.getElementById("video-form");
+        const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+        const videoFile = document.getElementById("videoFile");
+        const preview = document.getElementById("preview");
+        const previewContainer = document.getElementById("preview-container");
+        const urlInput = document.getElementById("url");
+
+        // Tabs
+        const tabs = document.querySelectorAll(".imagen-tab");
+        const panels = document.querySelectorAll(".imagen-panel");
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const target = tab.getAttribute("data-tab");
+                tabs.forEach((t) => t.classList.remove("active"));
+                tab.classList.add("active");
+                panels.forEach((p) => {
+                    p.classList.toggle(
+                        "active",
+                        p.getAttribute("data-panel") === target,
+                    );
+                });
+            });
+        });
+
+        // Preview de video
+        if (videoFile && "files" in videoFile) {
+            videoFile.addEventListener("change", () => {
+                const files = videoFile.files;
+                if (
+                    !files ||
+                    typeof files !== "object" ||
+                    !("length" in files)
+                ) {
+                    if (previewContainer && "style" in previewContainer) {
+                        previewContainer.style.display = "none";
+                    }
+                    return;
+                }
+                const filesArray = Array.from(files);
+                const file = filesArray.length > 0 ? filesArray[0] : null;
+                if (!file) {
+                    if (previewContainer && "style" in previewContainer) {
+                        previewContainer.style.display = "none";
+                    }
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (preview && "src" in preview) {
+                        preview.src = String(e.target ? e.target.result : "");
+                    }
+                    if (previewContainer && "style" in previewContainer) {
+                        previewContainer.style.display = "block";
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (form && errorMsg && submitBtn) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.textContent = "Guardando...";
+
+                const elTitulo = document.getElementById("titulo");
+                const elDescripcion = document.getElementById("descripcion");
+                const titulo =
+                    elTitulo && "value" in elTitulo ? elTitulo.value : "";
+                const descripcion =
+                    elDescripcion && "value" in elDescripcion
+                        ? elDescripcion.value
+                        : "";
+
+                const panelActivo = document.querySelector(
+                    ".imagen-panel.active",
+                );
+                const archivoActivo =
+                    panelActivo?.getAttribute("data-panel") === "archivo";
+                let url = urlInput && "value" in urlInput ? urlInput.value : "";
+
+                try {
+                    if (
+                        archivoActivo &&
+                        videoFile &&
+                        "files" in videoFile &&
+                        videoFile.files &&
+                        typeof videoFile.files === "object" &&
+                        "length" in videoFile.files &&
+                        videoFile.files.length > 0
+                    ) {
+                        const filesArray = Array.from(videoFile.files);
+                        const file = filesArray[0];
+                        submitBtn.textContent = "Subiendo video...";
+
+                        const blob = await upload(file.name, file, {
+                            access: "public",
+                            handleUploadUrl: "/api/videos/upload-token",
+                        });
+
+                        url = blob.url;
+                    }
+
+                    if (!url) {
+                        errorMsg.textContent =
+                            "Seleccioná un archivo o pegá una URL de YouTube.";
+                        errorMsg.style.display = "block";
+                        return;
+                    }
+
+                    const res = await fetch("/api/videos", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ titulo, url, descripcion }),
+                    });
+
+                    if (res.ok) {
+                        window.location.reload();
+                    } else {
+                        const data = await res.json();
+                        errorMsg.textContent = data.error || "Error al guardar";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
+                    errorMsg.style.display = "block";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.textContent = "Agregar video";
+                }
+            });
+        }
+
+        document.querySelectorAll(".delete-video-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                if (!confirm("¿Eliminar este video?")) return;
+                const id = btn.getAttribute("data-id");
+                const res = await fetch(`/api/videos/${id}`, {
+                    method: "DELETE",
+                    credentials: "include",
+                });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error al eliminar");
+                }
+            });
+        });
+    </script>
+</AdminLayout>
+
+
+============================================
+ARCHIVO: src\pages\admin\eventos\nuevo.astro
+============================================
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { db } from "../../../db/index.js";
+import { galeria } from "../../../db/schema.js";
+import { desc } from "drizzle-orm";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+    return Astro.redirect("/login");
+}
+
+const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
+---
+
+<AdminLayout title="Nuevo evento | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container" style="max-width: 600px;">
+            <a
+                href="/admin"
+                class="admin-link-btn"
+                style="margin-bottom: 1.5rem; display: inline-block;"
+                >← Volver al panel</a
+            >
+
+            <h1 class="admin-page-title">Nuevo evento</h1>
+            <p class="admin-page-subtitle">
+                Completá los datos de la próxima presentación.
+            </p>
+
+            <form id="evento-form" class="admin-card">
+                <div class="admin-field">
+                    <label class="admin-label" for="titulo">Título *</label>
+                    <input
+                        id="titulo"
+                        type="text"
+                        name="titulo"
+                        required
+                        class="admin-input"
+                        placeholder="Ej: Peña de fin de año"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="lugar">Lugar *</label>
+                    <input
+                        id="lugar"
+                        type="text"
+                        name="lugar"
+                        required
+                        class="admin-input"
+                        placeholder="Ej: Centro Cultural Municipal"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="fecha">Fecha *</label>
+                    <input
+                        id="fecha"
+                        type="date"
+                        name="fecha"
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="hora">Hora</label>
+                    <input
+                        id="hora"
+                        type="text"
+                        name="hora"
+                        class="admin-input"
+                        placeholder="Ej: 21:00 hs"
+                    />
+                </div>
+
+                <div class="admin-field">
+                    <label class="admin-label"
+                        >Imagen del evento (opcional)</label
+                    >
+
+                    <div class="imagen-opciones">
+                        <div class="imagen-tabs">
+                            <button
+                                type="button"
+                                class="imagen-tab active"
+                                data-tab="galeria">Elegir de la galería</button
+                            >
+                            <button
+                                type="button"
+                                class="imagen-tab"
+                                data-tab="subir">Subir nueva</button
+                            >
+                        </div>
+
+                        <div class="imagen-panel active" data-panel="galeria">
+                            <select
+                                id="imagenUrl"
+                                name="imagenUrl"
+                                class="admin-input"
+                            >
+                                <option value="">Sin imagen</option>
+                                {
+                                    imagenes.map((img) => (
+                                        <option value={img.url}>
+                                            {img.alt}
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+
+                        <div class="imagen-panel" data-panel="subir">
+                            <input
+                                type="file"
+                                id="imagenFile"
+                                accept="image/*"
+                                class="admin-input"
+                                style="padding: 0.5rem;"
+                            />
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                            >
+                                JPG, PNG o WebP · máx 10 MB. La imagen se guarda
+                                en la galería y se asigna al evento.
+                            </p>
+                            <div
+                                id="preview-container"
+                                style="display: none; margin-top: 0.8rem;"
+                            >
+                                <img
+                                    id="preview"
+                                    style="max-width: 100%; max-height: 200px; border-radius: 4px; border: 1px solid rgba(255, 202, 40, 0.3);"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-actions">
+                    <button type="submit" class="btn" id="submit-btn"
+                        >Guardar evento</button
+                    >
+                    <a href="/admin" class="admin-link-btn">Cancelar</a>
+                </div>
+                <p
+                    id="error-msg"
+                    class="admin-msg error"
+                    style="display: none;"
+                >
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <style>
+        .imagen-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .imagen-tab {
+            background: none;
+            border: 1px solid rgba(233, 30, 99, 0.3);
+            color: var(--text-muted);
+            padding: 0.4rem 0.9rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .imagen-tab:hover {
+            border-color: var(--accent-soft);
+            color: var(--accent-soft);
+        }
+        .imagen-tab.active {
+            background: rgba(233, 30, 99, 0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .imagen-panel {
+            display: none;
+        }
+        .imagen-panel.active {
+            display: block;
+        }
+    </style>
+
+    <script>
+        // @ts-nocheck
+        const form = document.getElementById("evento-form");
+        const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+        const imagenFile = document.getElementById("imagenFile");
+        const preview = document.getElementById("preview");
+        const previewContainer = document.getElementById("preview-container");
+
+        // Tabs
+        const tabs = document.querySelectorAll(".imagen-tab");
+        const panels = document.querySelectorAll(".imagen-panel");
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const target = tab.getAttribute("data-tab");
+                tabs.forEach((t) => t.classList.remove("active"));
+                tab.classList.add("active");
+                panels.forEach((p) => {
+                    p.classList.toggle(
+                        "active",
+                        p.getAttribute("data-panel") === target,
+                    );
+                });
+            });
+        });
+
+        // Preview de imagen
+        if (imagenFile) {
+            imagenFile.addEventListener("change", () => {
+                const files = imagenFile.files;
+                if (!files || files.length === 0) {
+                    if (previewContainer)
+                        previewContainer.style.display = "none";
+                    return;
+                }
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (preview)
+                        preview.src = String(e.target ? e.target.result : "");
+                    if (previewContainer)
+                        previewContainer.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (form && errorMsg && submitBtn) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.textContent = "Guardando...";
+
+                const elTitulo = document.getElementById("titulo");
+                const elLugar = document.getElementById("lugar");
+                const elFecha = document.getElementById("fecha");
+                const elHora = document.getElementById("hora");
+                const elImagenUrl = document.getElementById("imagenUrl");
+
+                const titulo = elTitulo ? elTitulo.value : "";
+                const lugar = elLugar ? elLugar.value : "";
+                const fecha = elFecha ? elFecha.value : "";
+                const hora = elHora ? elHora.value : "";
+                let imagenUrl = elImagenUrl ? elImagenUrl.value : "";
+
+                try {
+                    const file =
+                        imagenFile && imagenFile.files
+                            ? imagenFile.files[0]
+                            : null;
+                    if (file) {
+                        // Carga dinámica del SDK de Blob (solo cuando se necesita)
+                        const { upload } = await import("@vercel/blob/client");
+                        const blob = await upload(file.name, file, {
+                            access: "public",
+                            handleUploadUrl: "/api/upload-token",
+                        });
+                        imagenUrl = blob.url;
+
+                        const alt = titulo || "Imagen de evento";
+                        await fetch("/api/galeria", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include",
+                            body: JSON.stringify({
+                                alt,
+                                url: imagenUrl,
+                                seccion: null,
+                            }),
+                        });
+                    }
+
+                    const res = await fetch("/api/eventos", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            titulo,
+                            lugar,
+                            fecha,
+                            hora,
+                            imagenUrl,
+                        }),
+                    });
+
+                    if (res.ok) {
+                        window.location.href = "/admin";
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        errorMsg.textContent = data.error || "Error al guardar";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
+                    errorMsg.style.display = "block";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.textContent = "Guardar evento";
+                }
+            });
+        }
+    </script>
+</AdminLayout>
+
+
+============================================
+ARCHIVO: src\pages\admin\eventos\[id].astro
+============================================
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { db } from "../../../db/index.js";
+import { eventos, galeria } from "../../../db/schema.js";
+import { eq, desc } from "drizzle-orm";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) {
+    return Astro.redirect("/login");
+}
+
+const id = Number(Astro.params.id);
+const [evento] = await db.select().from(eventos).where(eq(eventos.id, id));
+
+if (!evento) {
+    return Astro.redirect("/admin");
+}
+
+const imagenes = await db.select().from(galeria).orderBy(desc(galeria.id));
+const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
+---
+
+<AdminLayout title="Editar evento | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container" style="max-width: 600px;">
+            <a
+                href="/admin"
+                class="admin-link-btn"
+                style="margin-bottom: 1.5rem; display: inline-block;"
+                >← Volver al panel</a
+            >
+
+            <h1 class="admin-page-title">Editar evento</h1>
+            <p class="admin-page-subtitle">
+                Modificá los datos y guardá los cambios.
+            </p>
+
+            <form id="evento-form" class="admin-card">
+                <div class="admin-field">
+                    <label class="admin-label" for="titulo">Título *</label>
+                    <input
+                        id="titulo"
+                        type="text"
+                        name="titulo"
+                        value={evento.titulo}
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="lugar">Lugar *</label>
+                    <input
+                        id="lugar"
+                        type="text"
+                        name="lugar"
+                        value={evento.lugar}
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="fecha">Fecha *</label>
+                    <input
+                        id="fecha"
+                        type="date"
+                        name="fecha"
+                        value={fechaISO}
+                        required
+                        class="admin-input"
+                    />
+                </div>
+                <div class="admin-field">
+                    <label class="admin-label" for="hora">Hora</label>
+                    <input
+                        id="hora"
+                        type="text"
+                        name="hora"
+                        value={evento.hora || ""}
+                        class="admin-input"
+                        placeholder="Ej: 21:00 hs"
+                    />
+                </div>
+
+                <div class="admin-field">
+                    <label class="admin-label"
+                        >Imagen del evento (opcional)</label
+                    >
+
+                    <div
+                        id="imagen-actual-container"
+                        style={evento.imagenUrl
+                            ? "margin-bottom: 0.8rem;"
+                            : "display: none; margin-bottom: 0.8rem;"}
+                    >
+                        <p
+                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem;"
+                        >
+                            Imagen actual:
+                        </p>
+                        <img
+                            id="imagen-actual"
+                            src={evento.imagenUrl || ""}
+                            alt={evento.titulo}
+                            style="max-width: 200px; max-height: 150px; border-radius: 4px; border: 1px solid rgba(255, 202, 40, 0.3);"
+                        />
+                    </div>
+
+                    <div class="imagen-opciones">
+                        <div class="imagen-tabs">
+                            <button
+                                type="button"
+                                class="imagen-tab active"
+                                data-tab="galeria">Elegir de la galería</button
+                            >
+                            <button
+                                type="button"
+                                class="imagen-tab"
+                                data-tab="subir">Subir nueva</button
+                            >
+                        </div>
+
+                        <div class="imagen-panel active" data-panel="galeria">
+                            <select
+                                id="imagenUrl"
+                                name="imagenUrl"
+                                class="admin-input"
+                            >
+                                <option value="" selected={!evento.imagenUrl}
+                                    >Sin imagen</option
+                                >
+                                {
+                                    imagenes.map((img) => (
+                                        <option
+                                            value={img.url}
+                                            selected={
+                                                evento.imagenUrl === img.url
+                                            }
+                                        >
+                                            {img.alt}
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+
+                        <div class="imagen-panel" data-panel="subir">
+                            <input
+                                type="file"
+                                id="imagenFile"
+                                accept="image/*"
+                                class="admin-input"
+                                style="padding: 0.5rem;"
+                            />
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
+                            >
+                                JPG, PNG o WebP · máx 10 MB. La imagen se guarda
+                                en la galería y reemplaza la actual.
+                            </p>
+                            <div
+                                id="preview-container"
+                                style="display: none; margin-top: 0.8rem;"
+                            >
+                                <img
+                                    id="preview"
+                                    style="max-width: 100%; max-height: 200px; border-radius: 4px; border: 1px solid rgba(255, 202, 40, 0.3);"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-actions">
+                    <button type="submit" class="btn" id="submit-btn"
+                        >Guardar cambios</button
+                    >
+                    <a href="/admin" class="admin-link-btn">Cancelar</a>
+                </div>
+                <p
+                    id="error-msg"
+                    class="admin-msg error"
+                    style="display: none;"
+                >
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <script define:vars={{ id }}>
+        // @ts-nocheck
+        import { upload } from "@vercel/blob/client";
+
+        const form = document.getElementById("evento-form");
+        const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+        const imagenFile = document.getElementById("imagenFile");
+        const preview = document.getElementById("preview");
+        const previewContainer = document.getElementById("preview-container");
+        const imagenActual = document.getElementById("imagen-actual");
+        const imagenActualContainer = document.getElementById(
+            "imagen-actual-container",
+        );
+
+        const tabs = document.querySelectorAll(".imagen-tab");
+        const panels = document.querySelectorAll(".imagen-panel");
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const target = tab.getAttribute("data-tab");
+                tabs.forEach((t) => t.classList.remove("active"));
+                tab.classList.add("active");
+                panels.forEach((p) => {
+                    p.classList.toggle(
+                        "active",
+                        p.getAttribute("data-panel") === target,
+                    );
+                });
+            });
+        });
+
+        // Actualizar preview de "Imagen actual" al cambiar el select
+        const selectImagen = document.getElementById("imagenUrl");
+        if (selectImagen) {
+            selectImagen.addEventListener("change", () => {
+                const nuevaUrl = selectImagen.value;
+                if (imagenActual) {
+                    if (nuevaUrl) {
+                        imagenActual.src = nuevaUrl;
+                        if (imagenActualContainer)
+                            imagenActualContainer.style.display = "block";
+                    } else {
+                        if (imagenActualContainer)
+                            imagenActualContainer.style.display = "none";
+                    }
+                }
+            });
+        }
+
+        // Preview del archivo nuevo
+        if (imagenFile) {
+            imagenFile.addEventListener("change", () => {
+                const files = imagenFile.files;
+                if (!files || files.length === 0) {
+                    if (previewContainer)
+                        previewContainer.style.display = "none";
+                    return;
+                }
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (preview)
+                        preview.src = String(e.target ? e.target.result : "");
+                    if (previewContainer)
+                        previewContainer.style.display = "block";
+                    if (imagenActual) {
+                        imagenActual.src = String(
+                            e.target ? e.target.result : "",
+                        );
+                        if (imagenActualContainer)
+                            imagenActualContainer.style.display = "block";
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (form && errorMsg && submitBtn) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                errorMsg.style.display = "none";
+                submitBtn.setAttribute("disabled", "true");
+                submitBtn.textContent = "Guardando...";
+
+                const elTitulo = document.getElementById("titulo");
+                const elLugar = document.getElementById("lugar");
+                const elFecha = document.getElementById("fecha");
+                const elHora = document.getElementById("hora");
+                const elImagenUrl = document.getElementById("imagenUrl");
+
+                const titulo = elTitulo ? elTitulo.value : "";
+                const lugar = elLugar ? elLugar.value : "";
+                const fecha = elFecha ? elFecha.value : "";
+                const hora = elHora ? elHora.value : "";
+                let imagenUrl = elImagenUrl ? elImagenUrl.value : "";
+
+                try {
+                    const file =
+                        imagenFile && imagenFile.files
+                            ? imagenFile.files[0]
+                            : null;
+                    if (file) {
+                        // SUBIDA DIRECTA A BLOB (antes usaba /api/upload)
+                        const blob = await upload(file.name, file, {
+                            access: "public",
+                            handleUploadUrl: "/api/upload-token",
+                        });
+
+                        imagenUrl = blob.url;
+
+                        const alt = titulo || "Imagen de evento";
+                        await fetch("/api/galeria", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include",
+                            body: JSON.stringify({
+                                alt,
+                                url: imagenUrl,
+                                seccion: null,
+                            }),
+                        });
+                    }
+
+                    // Usamos la variable id inyectada por define:vars
+                    const res = await fetch(`/api/eventos/${id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            titulo,
+                            lugar,
+                            fecha,
+                            hora,
+                            imagenUrl,
+                        }),
+                    });
+
+                    if (res.ok) {
+                        window.location.href = "/admin";
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        errorMsg.textContent = data.error || "Error al guardar";
+                        errorMsg.style.display = "block";
+                    }
+                } catch (err) {
+                    errorMsg.textContent =
+                        err instanceof Error
+                            ? err.message
+                            : "Error de conexión";
+                    errorMsg.style.display = "block";
+                } finally {
+                    submitBtn.removeAttribute("disabled");
+                    submitBtn.textContent = "Guardar cambios";
+                }
+            });
+        }
+    </script>
+</AdminLayout>
+

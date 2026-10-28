@@ -1,63 +1,62 @@
 export const prerender = false;
 
-import { handleUpload } from '@vercel/blob/client';
+import { put } from '@vercel/blob';
 import { auth } from '@/lib/auth.js';
 
 export const POST = async ({ request }) => {
-    if (!import.meta.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_READ_WRITE_TOKEN) {
-        console.error('[upload-token] ERROR: BLOB_READ_WRITE_TOKEN no está definido en el entorno.');
-        return new Response(
-            JSON.stringify({ error: 'Configuración del servidor incompleta (falta token de Blob)' }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
-        );
-    }
-
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session) {
-        console.warn('[upload-token] Intento de subida sin sesión válida.');
-        return new Response(
-            JSON.stringify({ error: 'No autorizado' }),
-            { status: 401, headers: { 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ error: 'No autorizado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
     }
 
-    let body;
-    try {
-        body = await request.json();
-    } catch (parseError) {
-        console.error('[upload-token] Error al parsear el body de la petición:', parseError);
-        return new Response(
-            JSON.stringify({ error: 'Petición inválida' }),
-            { status: 400, headers: { 'Content-Type': 'application/json' } }
-        );
+    const formData = await request.formData();
+    const file = formData.get('file');
+
+    if (!file || !(file instanceof File)) {
+        return new Response(JSON.stringify({ error: 'No se recibió archivo' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    if (!file.type.startsWith('image/')) {
+        return new Response(JSON.stringify({ error: 'El archivo debe ser una imagen' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+        return new Response(JSON.stringify({ error: 'La imagen supera los 10 MB' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
     }
 
     try {
-        const jsonResponse = await handleUpload({
-            body,
-            request,
+        const blob = await put(file.name, file, {
+            access: 'public',
+            addRandomSuffix: true,
             token: import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN,
-            onBeforeGenerateToken: async (pathname) => {
-                return {
-                    allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-                    maximumSizeInBytes: 10 * 1024 * 1024,
-                    validUntil: Date.now() + 5 * 60 * 1000,
-                };
-            },
-            onUploadCompleted: async ({ blob }) => {
-                console.log('[upload-token] Imagen subida:', blob.url);
-            },
         });
 
-        return new Response(JSON.stringify(jsonResponse), {
+        return new Response(JSON.stringify({ url: blob.url }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
-    } catch (error) {
-        console.error('[upload-token] Error en handleUpload:', error);
+    } catch (err) {
+        console.error('Error al subir a Vercel Blob:', err);
         return new Response(
-            JSON.stringify({ error: error.message || 'Error interno al generar el token' }),
-            { status: 400, headers: { 'Content-Type': 'application/json' } }
+            JSON.stringify({
+                error: err instanceof Error ? err.message : 'Error al subir la imagen',
+            }),
+            {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            }
         );
     }
 };

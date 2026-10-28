@@ -1,0 +1,211 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+
+export const prerender = false;
+
+const session = Astro.locals.session;
+if (!session) return Astro.redirect("/login");
+if (session.user.role !== "admin") return Astro.redirect("/admin");
+
+const rolParam = Astro.url.searchParams.get("rol");
+const esAdmin = rolParam === "admin";
+const rolDefault = esAdmin ? "admin" : "editor";
+---
+
+<AdminLayout title="Nuevo usuario | Panel">
+    <section style="padding: 3rem 0;">
+        <div class="container" style="max-width: 640px;">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title">
+                        {esAdmin ? "Nuevo administrador" : "Nuevo usuario"}
+                    </h1>
+                    <p class="admin-page-subtitle">
+                        {
+                            esAdmin
+                                ? "Los administradores pueden gestionar contenido y usuarios."
+                                : "Los editores pueden gestionar contenido pero no usuarios."
+                        }
+                    </p>
+                </div>
+                <a href="/admin/usuarios" class="admin-link-btn">← Volver</a>
+            </div>
+
+            <form id="form-usuario" class="admin-card form-card">
+                <input type="hidden" name="role" value={rolDefault} />
+
+                <div class="form-field">
+                    <label for="name">Nombre</label>
+                    <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        required
+                        autocomplete="off"
+                    />
+                </div>
+
+                <div class="form-field">
+                    <label for="email">Email</label>
+                    <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        autocomplete="off"
+                    />
+                </div>
+
+                <div class="form-field">
+                    <label for="password">Contraseña</label>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                    />
+                    <small
+                        >Mínimo 8 caracteres. Compartila con la persona para que
+                        inicie sesión.</small
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="password2">Repetir contraseña</label>
+                    <input
+                        id="password2"
+                        name="password2"
+                        type="password"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                    />
+                </div>
+
+                <p id="form-error" class="form-error" hidden></p>
+
+                <div class="form-actions">
+                    <a href="/admin/usuarios" class="admin-link-btn">Cancelar</a
+                    >
+                    <button type="submit" class="btn" id="btn-submit">
+                        {esAdmin ? "Crear administrador" : "Crear usuario"}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        // @ts-nocheck
+        const form = document.getElementById("form-usuario");
+        const errorEl = document.getElementById("form-error");
+        const btn = document.getElementById("btn-submit");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            errorEl.hidden = true;
+
+            const fd = new FormData(form);
+            const password = fd.get("password");
+            const password2 = fd.get("password2");
+
+            if (password !== password2) {
+                errorEl.textContent = "Las contraseñas no coinciden";
+                errorEl.hidden = false;
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Creando...";
+
+            try {
+                const res = await fetch("/api/usuarios", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        name: fd.get("name"),
+                        email: fd.get("email"),
+                        password,
+                        role: fd.get("role"),
+                    }),
+                });
+
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    errorEl.textContent =
+                        data.error || "Error al crear el usuario";
+                    errorEl.hidden = false;
+                    btn.disabled = false;
+                    btn.textContent = "Crear usuario";
+                    return;
+                }
+
+                window.location.href = "/admin/usuarios";
+            } catch (err) {
+                errorEl.textContent = "Error de conexión";
+                errorEl.hidden = false;
+                btn.disabled = false;
+            }
+        });
+    </script>
+
+    <style>
+        .admin-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .form-card {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .form-field label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .form-field input {
+            padding: 0.7rem 0.9rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            color: inherit;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-field input:focus {
+            outline: none;
+            border-color: var(--accent-soft);
+        }
+        .form-field small {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .form-error {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            padding: 0.7rem;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 4px;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</AdminLayout>
