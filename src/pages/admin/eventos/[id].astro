@@ -156,8 +156,8 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                             <p
                                 style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;"
                             >
-                                JPG, PNG o WebP · máx 4.5 MB. La imagen se
-                                guarda en la galería y reemplaza la actual.
+                                JPG, PNG o WebP · máx 10 MB. La imagen se guarda
+                                en la galería y reemplaza la actual.
                             </p>
                             <div
                                 id="preview-container"
@@ -221,7 +221,7 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
         }
     </style>
 
-    <script>
+    <script define:vars={{ id }}>
         // @ts-nocheck
         const form = document.getElementById("evento-form");
         const errorMsg = document.getElementById("error-msg");
@@ -348,6 +348,7 @@ const fechaISO = new Date(evento.fecha).toISOString().split("T")[0];
                         });
                     }
 
+                    // Usamos la variable id inyectada por define:vars
                     const res = await fetch(`/api/eventos/${id}`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
